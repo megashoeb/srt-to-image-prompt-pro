@@ -210,13 +210,29 @@ export default function App() {
     }
   };
 
+  const copyToClipboard = (text: string) => {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text);
+    } else {
+      // Fallback for HTTP (non-secure context)
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+    }
+  };
+
   const copyAll = () => {
     const text = prompts.map(p => {
       let t = `${p.id}:\n${p.prompt}`;
       if (p.videoPrompt) t += `\n\nVideo Prompt ${p.id}:\n${p.videoPrompt}`;
       return t;
     }).join('\n\n');
-    navigator.clipboard.writeText(text);
+    copyToClipboard(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -908,7 +924,7 @@ Napoleon watches grimly from his vantage point.`;
                           </span>
                         )}
                       </div>
-                      <button onClick={() => navigator.clipboard.writeText(prompt.prompt)}
+                      <button onClick={() => copyToClipboard(prompt.prompt)}
                         className="text-zinc-500 hover:text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy this prompt">
                         <Copy className="w-4 h-4" />
                       </button>
