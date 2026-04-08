@@ -153,18 +153,61 @@ export default function App() {
         handleFallback
       );
 
-      setPrompts(result.prompts);
-      setFailedChunks(result.failedChunks);
+      let currentPrompts = result.prompts;
+      let currentFailed = result.failedChunks;
+      setPrompts(currentPrompts);
+      setFailedChunks(currentFailed);
 
-      if (result.failedChunks.length > 0) {
-        const failedCount = result.failedChunks.reduce((sum, fc) => sum + fc.subtitles.length, 0);
+      // Auto-retry up to 3 times with 5s gap
+      const MAX_AUTO_RETRIES = 3;
+      for (let autoRetry = 1; autoRetry <= MAX_AUTO_RETRIES && currentFailed.length > 0; autoRetry++) {
+        const missingCount = currentFailed.reduce((s, fc) => s + fc.subtitles.length, 0);
         setProgress({
-          current: subtitles.length - failedCount,
+          current: currentPrompts.length,
           total: subtitles.length,
-          status: `Done — ${result.prompts.length} prompts generated, ${result.failedChunks.length} chunk(s) failed`
+          status: `Auto-recovering ${missingCount} missing prompts (attempt ${autoRetry}/${MAX_AUTO_RETRIES})...`
         });
+
+        // Wait 5 seconds before retry
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        const retryResult = await retryFailedChunks(
+          currentFailed, context, settings,
+          (retryPrompts, processedCount, total, status) => {
+            const merged = [...currentPrompts, ...retryPrompts];
+            merged.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+            const seen = new Set<string>();
+            const deduped = merged.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+            setPrompts(deduped);
+            setProgress({ current: processedCount, total, status: `Auto-retry ${autoRetry}: ${status}` });
+          },
+          handleFallback
+        );
+
+        // Merge results
+        const merged = [...currentPrompts, ...retryResult.prompts];
+        merged.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+        const seen = new Set<string>();
+        currentPrompts = merged.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+        currentFailed = retryResult.failedChunks;
+        setPrompts(currentPrompts);
+        setFailedChunks(currentFailed);
+
+        if (currentFailed.length === 0) break;
+      }
+
+      // Final status
+      if (currentPrompts.length >= subtitles.length) {
+        setProgress({ current: subtitles.length, total: subtitles.length, status: 'Complete! All prompts generated.' });
       } else {
-        setProgress({ current: subtitles.length, total: subtitles.length, status: 'Complete!' });
+        const missing = subtitles.length - currentPrompts.length;
+        const missingIds = subtitles.filter(s => !currentPrompts.some(p => p.id === s.id)).map(s => s.id);
+        setProgress({
+          current: currentPrompts.length,
+          total: subtitles.length,
+          status: `${currentPrompts.length}/${subtitles.length} done — ${missing} prompts need manual recovery`
+        });
+        setError(`${missing} prompts still missing after 3 auto-retries. Missing IDs: ${missingIds.join(', ')}. Click "Recover" to try again.`);
       }
     } catch (err: unknown) {
       console.error(err);
@@ -941,15 +984,16 @@ Napoleon watches grimly from his vantage point.`;
               </div>
             )}
 
-            {/* FIX 4: Failed Chunks Summary */}
-            {failedChunks.length > 0 && !isProcessing && (
-              <div className="px-5 py-3 bg-amber-500/5 border-b border-amber-500/20 flex items-center justify-between">
-                <div>
-                  <p className="text-xs text-amber-400 font-medium">
-                    {prompts.length} of {subtitles.length} prompts ready — {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} remaining
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">Click "Retry" to recover remaining prompts</p>
-                </div>
+            {/* Missing prompts warning with IDs */}
+            {prompts.length > 0 && prompts.length < subtitles.length && !isProcessing && (
+              <div className="px-5 py-3 bg-amber-500/5 border-b border-amber-500/20">
+                <p className="text-xs text-amber-400 font-medium">
+                  {prompts.length} of {subtitles.length} prompts ready — {subtitles.length - prompts.length} missing
+                </p>
+                <p className="text-xs text-zinc-500 mt-1 font-mono truncate">
+                  Missing IDs: {subtitles.filter(s => !prompts.some(p => p.id === s.id)).map(s => s.id).join(', ')}
+                </p>
+                <p className="text-xs text-zinc-600 mt-1">Click "Recover" button above to retry these prompts</p>
               </div>
             )}
 
