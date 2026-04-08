@@ -1469,6 +1469,7 @@ export async function processAllChunks(
 }
 
 // Retry only the failed chunks
+// Retry with parallel task queue (same as main processing)
 export async function retryFailedChunks(
   failedChunks: FailedChunk[],
   globalContext: GlobalContext,
@@ -1479,26 +1480,49 @@ export async function retryFailedChunks(
   const total = failedChunks.reduce((s, fc) => s + fc.subtitles.length, 0);
   const allPrompts: GeneratedPrompt[] = [];
   const stillFailed: FailedChunk[] = [];
+  let nextIdx = 0;
   let processedCount = 0;
 
-  for (const fc of failedChunks) {
-    const clientInfo = keyPool.getNextClient();
-    if (!clientInfo) {
-      stillFailed.push({ ...fc, error: 'All API keys blacklisted' });
+  // Parallel worker — same as main processAllChunks
+  async function worker(keyIndex: number) {
+    while (true) {
+      const ci = nextIdx;
+      if (ci >= failedChunks.length) break;
+      nextIdx++;
+
+      const fc = failedChunks[ci];
+      const clientInfo = keyPool.getClientByIndex(keyIndex);
+
+      let activeClient = clientInfo;
+      if (keyPool.isBlacklisted(clientInfo.keyId)) {
+        const alt = keyPool.getNextClient();
+        if (!alt) {
+          stillFailed.push({ ...fc, error: 'All API keys blacklisted' });
+          processedCount += fc.subtitles.length;
+          onProgress([...allPrompts], processedCount, total, `Recovery paused (keys cooling down)`);
+          continue;
+        }
+        activeClient = alt;
+      }
+
+      try {
+        const prompts = await generateChunkWithClient(fc.subtitles, globalContext, settings, activeClient, onFallback);
+        allPrompts.push(...prompts);
+        keyPool.reportSuccess(activeClient.keyId);
+      } catch (err: unknown) {
+        keyPool.reportFailure(activeClient.keyId);
+        stillFailed.push({ chunkIndex: fc.chunkIndex, subtitles: fc.subtitles, error: (err as { message?: string })?.message || String(err) });
+      }
+
       processedCount += fc.subtitles.length;
-      onProgress([...allPrompts], processedCount, total, `Retry failed (no healthy keys)`);
-      continue;
+      const sorted = [...allPrompts].sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+      onProgress(sorted, processedCount, total, `Retrying... ${allPrompts.length} recovered`);
     }
-    try {
-      const prompts = await generateChunkWithClient(fc.subtitles, globalContext, settings, clientInfo, onFallback);
-      allPrompts.push(...prompts);
-    } catch (err: unknown) {
-      keyPool.reportFailure(clientInfo.keyId);
-      stillFailed.push({ chunkIndex: fc.chunkIndex, subtitles: fc.subtitles, error: (err as { message?: string })?.message || String(err) });
-    }
-    processedCount += fc.subtitles.length;
-    onProgress([...allPrompts], processedCount, total, `Retrying... ${allPrompts.length} recovered`);
   }
+
+  // Launch parallel workers — one per key
+  const workerCount = Math.max(1, keyPool.getKeyCount());
+  await Promise.all(Array.from({ length: workerCount }, (_, i) => worker(i)));
 
   allPrompts.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
   return { prompts: allPrompts, failedChunks: stillFailed };
