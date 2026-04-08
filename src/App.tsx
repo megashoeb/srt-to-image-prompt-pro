@@ -250,23 +250,22 @@ export default function App() {
     }
   };
 
-  const copyAll = () => {
-    const text = prompts.map(p => {
-      let t = `${p.id}:\n${p.prompt}`;
-      if (p.videoPrompt) t += `\n\nVideo Prompt ${p.id}:\n${p.videoPrompt}`;
+  const formatPrompts = () => {
+    return prompts.map(p => {
+      let t = `Prompt ${p.id}: ${p.prompt}`;
+      if (p.videoPrompt) t += `\n\nVideo Prompt ${p.id}: ${p.videoPrompt}`;
       return t;
     }).join('\n\n');
-    copyToClipboard(text);
+  };
+
+  const copyAll = () => {
+    copyToClipboard(formatPrompts());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const exportTxt = () => {
-    const text = prompts.map(p => {
-      let t = `${p.id}:\n${p.prompt}`;
-      if (p.videoPrompt) t += `\n\nVideo Prompt ${p.id}:\n${p.videoPrompt}`;
-      return t;
-    }).join('\n\n');
+    const text = formatPrompts();
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
