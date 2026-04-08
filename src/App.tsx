@@ -23,6 +23,8 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [customTags, setCustomTags] = useState('');
   const [apiKeysText, setApiKeysText] = useState('');
+  const [backupKeysText, setBackupKeysText] = useState('');
+  const [showBackupKeys, setShowBackupKeys] = useState(false);
   const [fallbackLog, setFallbackLog] = useState<string[]>([]);
   // FIX 4: Failed chunks state for retry
   const [failedChunks, setFailedChunks] = useState<FailedChunk[]>([]);
@@ -51,7 +53,9 @@ export default function App() {
   const isMythology = settings.style === MYTHOLOGY_STYLE;
   const isHistory = isHistoryStyle(settings.style);
   const historyConfig = isHistory ? getHistoryStyleConfig(settings.style) : null;
-  const getActiveKeyCount = () => apiKeysText.split('\n').filter(k => k.trim()).length;
+  const getPrimaryKeyCount = () => apiKeysText.split('\n').filter(k => k.trim()).length;
+  const getBackupKeyCount = () => backupKeysText.split('\n').filter(k => k.trim()).length;
+  const getActiveKeyCount = () => getPrimaryKeyCount() + getBackupKeyCount();
 
   // MODULE 2: Auto-calculate optimal chunking when inputs change
   useEffect(() => {
@@ -110,13 +114,15 @@ export default function App() {
   const startProcessing = async () => {
     if (subtitles.length === 0) return;
 
-    const keys = apiKeysText.split('\n').filter(k => k.trim());
-    if (keys.length === 0) {
+    const primaryKeys = apiKeysText.split('\n').filter(k => k.trim());
+    const backupKeys = backupKeysText.split('\n').filter(k => k.trim());
+    const allKeys = [...primaryKeys, ...backupKeys];
+    if (allKeys.length === 0) {
       setError('Please add at least one API key.');
       return;
     }
 
-    setApiKeys(keys);
+    setApiKeys(allKeys);
     setIsProcessing(true);
     setError(null);
     setPrompts([]);
@@ -187,7 +193,8 @@ export default function App() {
 
     if (chunksToRetry.length === 0 || !globalContext) return;
 
-    setApiKeys(apiKeysText.split('\n').filter(k => k.trim()));
+    const allRetryKeys = [...apiKeysText.split('\n').filter(k => k.trim()), ...backupKeysText.split('\n').filter(k => k.trim())];
+    setApiKeys(allRetryKeys);
     setIsProcessing(true);
     setError(null);
     setFallbackLog([]);
@@ -378,11 +385,18 @@ Napoleon watches grimly from his vantage point.`;
                 <Key className="w-5 h-5 text-amber-500" />
                 API Keys
               </h2>
-              {getActiveKeyCount() > 0 && (
-                <span className="bg-amber-500/10 text-amber-400 text-xs font-medium py-0.5 px-2 rounded-full border border-amber-500/20">
-                  {getActiveKeyCount()} key{getActiveKeyCount() > 1 ? 's' : ''} active
-                </span>
-              )}
+              <div className="flex items-center gap-1.5">
+                {getPrimaryKeyCount() > 0 && (
+                  <span className="bg-amber-500/10 text-amber-400 text-xs font-medium py-0.5 px-2 rounded-full border border-amber-500/20">
+                    {getPrimaryKeyCount()} active
+                  </span>
+                )}
+                {getBackupKeyCount() > 0 && (
+                  <span className="bg-emerald-500/10 text-emerald-400 text-xs font-medium py-0.5 px-2 rounded-full border border-emerald-500/20">
+                    +{getBackupKeyCount()} backup
+                  </span>
+                )}
+              </div>
             </div>
             <textarea
               value={apiKeysText}
@@ -390,9 +404,36 @@ Napoleon watches grimly from his vantage point.`;
               placeholder={"Paste your Gemini API key(s) here\nOne key per line for parallel processing"}
               className="w-full h-24 bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-300 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 resize-none font-mono placeholder:text-zinc-600"
             />
-            <p className="text-xs text-zinc-500 mt-2">Multiple keys = parallel processing = faster results</p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-zinc-500">Primary keys = parallel workers</p>
+              <button onClick={() => setShowBackupKeys(!showBackupKeys)}
+                className="text-xs text-zinc-500 hover:text-amber-400 transition-colors">
+                {showBackupKeys ? 'Hide' : 'Add'} Backup Keys
+              </button>
+            </div>
 
-            {/* FIX 10: Key Health Status */}
+            {/* Backup Keys */}
+            {showBackupKeys && (
+              <div className="mt-3 pt-3 border-t border-zinc-800">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-medium text-zinc-400">Backup Keys</span>
+                  {getBackupKeyCount() > 0 && (
+                    <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-medium py-0.5 px-1.5 rounded-full border border-emerald-500/20">
+                      {getBackupKeyCount()} standby
+                    </span>
+                  )}
+                </div>
+                <textarea
+                  value={backupKeysText}
+                  onChange={e => setBackupKeysText(e.target.value)}
+                  placeholder={"Backup API key(s) — used when primary keys fail\nOne key per line"}
+                  className="w-full h-16 bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-sm text-zinc-300 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 resize-none font-mono placeholder:text-zinc-600"
+                />
+                <p className="text-xs text-zinc-600 mt-1">Auto-activate when primary keys get blacklisted</p>
+              </div>
+            )}
+
+            {/* Key Health Status */}
             {keyHealth.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-zinc-800">
                 {keyHealth.map((kh, i) => (
@@ -797,16 +838,6 @@ Napoleon watches grimly from his vantage point.`;
               )}
             </button>
 
-            {/* Recover remaining prompts — visible when ANY prompts are missing */}
-            {prompts.length > 0 && prompts.length < subtitles.length && !isProcessing && (
-              <button
-                onClick={() => retryFailed()}
-                className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" />
-                Recover {subtitles.length - prompts.length} Remaining Prompts
-              </button>
-            )}
 
             {error && (
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-lg flex items-start gap-3">
@@ -836,6 +867,14 @@ Napoleon watches grimly from his vantage point.`;
               </h2>
 
               <div className="flex items-center gap-2">
+                {/* Recover button — in header for easy access */}
+                {prompts.length > 0 && prompts.length < subtitles.length && !isProcessing && (
+                  <button onClick={() => retryFailed()}
+                    className="px-3 py-1.5 text-sm font-medium text-amber-300 hover:text-white bg-amber-600/20 hover:bg-amber-600 border border-amber-500/30 rounded-md transition-colors flex items-center gap-1.5">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Recover {subtitles.length - prompts.length}
+                  </button>
+                )}
                 <button onClick={copyAll} disabled={prompts.length === 0}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed" title="Copy All">
                   {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
