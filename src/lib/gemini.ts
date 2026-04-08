@@ -986,15 +986,15 @@ async function callWithFallback(
 
   for (let i = 0; i < modelsToTry.length; i++) {
     const model = modelsToTry[i];
-    let rateLimitRetries = 0;
+    let retries = 0;
+    const MAX_RETRIES_SAME_MODEL = 3; // Retry same model 3 times before switching
 
-    while (true) {
+    while (retries < MAX_RETRIES_SAME_MODEL) {
       try {
         const thinkingConfig = thinkingMode
           ? { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } }
           : {};
 
-        // MODULE 3: Include maxOutputTokens in config
         const response = await client.models.generateContent({
           model,
           contents,
@@ -1009,10 +1009,8 @@ async function callWithFallback(
         if (!response.text) throw new Error("Empty response from model.");
         const text = response.text.trim();
 
-        // MODULE 5: Check for truncated response
         if (isResponseTruncated(text)) {
           console.warn(`Truncated response from "${model}" — attempting repair`);
-          // Still return it — safeParseJSON can handle partial JSON
         }
 
         return text;
@@ -1020,40 +1018,47 @@ async function callWithFallback(
         const status = getHttpStatus(err);
         const errMsg = (err as { message?: string })?.message || String(err);
 
-        // 429 Rate Limit — wait and retry SAME model
-        if (status === 429 && rateLimitRetries < 2) {
-          rateLimitRetries++;
-          console.warn(`Rate limited on "${model}" (attempt ${rateLimitRetries}). Waiting 5s...`);
-          await sleep(5000);
+        // 400 Bad Request — prompt issue, no retry needed
+        if (status === 400) throw new Error(`Bad request (400) on "${model}": ${errMsg}`);
+
+        // 429 Rate Limit — wait longer, retry same model
+        if (status === 429) {
+          retries++;
+          const waitSec = 5 + (retries * 3); // 8s, 11s, 14s
+          console.warn(`Rate limited on "${model}" (retry ${retries}). Waiting ${waitSec}s...`);
+          await sleep(waitSec * 1000);
           continue;
         }
 
-        // 400 Bad Request — prompt issue
-        if (status === 400) throw new Error(`Bad request (400) on "${model}": ${errMsg}`);
-
-        // Network error — exponential backoff
-        if (isNetworkError(err)) {
-          let recovered = false;
-          for (let retry = 0; retry < 3; retry++) {
-            await sleep(Math.pow(2, retry) * 1000);
-            try {
-              const tc = thinkingMode ? { thinkingConfig: { thinkingLevel: ThinkingLevel.HIGH } } : {};
-              const r = await client.models.generateContent({
-                model, contents, config: { systemInstruction, maxOutputTokens, temperature: 0.7, ...tc }
-              });
-              if (r.text) { recovered = true; return r.text.trim(); }
-            } catch { /* continue */ }
+        // 500/503 Server Error — wait 3s, retry SAME model first
+        if (status === 500 || status === 503 || !status) {
+          retries++;
+          if (retries < MAX_RETRIES_SAME_MODEL) {
+            const waitSec = 2 + (retries * 2); // 4s, 6s
+            console.warn(`Server error on "${model}" (retry ${retries}/${MAX_RETRIES_SAME_MODEL}). Waiting ${waitSec}s...`);
+            await sleep(waitSec * 1000);
+            continue; // Retry SAME model
           }
-          if (!recovered) console.warn(`Network error on "${model}" after retries`);
+          // All retries exhausted — fall through to next model
         }
 
-        console.warn(`Model "${model}" failed (${status || 'unknown'}): ${errMsg}`);
+        // Network error — retry with backoff
+        if (isNetworkError(err)) {
+          retries++;
+          if (retries < MAX_RETRIES_SAME_MODEL) {
+            await sleep(Math.pow(2, retries) * 1000);
+            continue;
+          }
+        }
+
+        // All retries for this model exhausted — switch to next model
+        console.warn(`Model "${model}" failed after ${retries} retries (${status || 'unknown'})`);
         if (i < modelsToTry.length - 1) {
           onFallback?.(model, modelsToTry[i + 1], errMsg);
         } else {
           throw new Error(`All models failed. Last error (${model}): ${errMsg}`);
         }
-        break;
+        break; // Move to next model
       }
     }
   }
@@ -1446,7 +1451,13 @@ export async function processAllChunks(
       }
 
       processedCount += chunk.subtitles.length;
-      onProgress([...allPrompts], processedCount, total, `Processing... ${allPrompts.length} prompts generated`);
+      // Sort before sending to UI so prompts always appear in order
+      const sorted = [...allPrompts].sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+      const failedCount = failedChunks.length;
+      const statusMsg = failedCount > 0
+        ? `Processing... ${sorted.length} prompts generated (${failedCount} chunk${failedCount > 1 ? 's' : ''} retrying)`
+        : `Processing... ${sorted.length} prompts generated`;
+      onProgress(sorted, processedCount, total, statusMsg);
     }
   }
 

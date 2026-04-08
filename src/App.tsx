@@ -197,7 +197,7 @@ export default function App() {
       setFailedChunks(result.failedChunks);
 
       if (result.failedChunks.length > 0) {
-        setError(`${result.failedChunks.length} chunk(s) still failing after retry.`);
+        setError(`${result.failedChunks.reduce((s: number, f: FailedChunk) => s + f.subtitles.length, 0)} prompts still pending. Try again in a moment.`);
       } else {
         setProgress({ current: subtitles.length, total: subtitles.length, status: 'All chunks recovered!' });
       }
@@ -764,14 +764,14 @@ Napoleon watches grimly from his vantage point.`;
               )}
             </button>
 
-            {/* FIX 4: Retry Failed Chunks Button */}
+            {/* Recover remaining prompts button */}
             {failedChunks.length > 0 && !isProcessing && (
               <button
                 onClick={retryFailed}
-                className="w-full mt-3 bg-yellow-600 hover:bg-yellow-500 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Retry {failedChunks.length} Failed Chunk{failedChunks.length > 1 ? 's' : ''}
+                Recover {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} Remaining Prompts
               </button>
             )}
 
@@ -795,10 +795,9 @@ Napoleon watches grimly from his vantage point.`;
                 {prompts.length > 0 && (
                   <span className="bg-zinc-800 text-zinc-300 text-xs py-0.5 px-2 rounded-full">{prompts.length}</span>
                 )}
-                {/* FIX 4: Show failed count */}
                 {failedChunks.length > 0 && (
-                  <span className="bg-red-500/10 text-red-400 text-xs py-0.5 px-2 rounded-full border border-red-500/20">
-                    {failedChunks.length} failed
+                  <span className="bg-amber-500/10 text-amber-400 text-xs py-0.5 px-2 rounded-full border border-amber-500/20">
+                    {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} pending
                   </span>
                 )}
               </h2>
@@ -863,24 +862,23 @@ Napoleon watches grimly from his vantage point.`;
               </div>
             )}
 
-            {/* Fallback Log */}
+            {/* Model Switch Info — subtle, non-alarming */}
             {fallbackLog.length > 0 && (
-              <div className="px-5 py-2 bg-yellow-500/5 border-b border-yellow-500/20 space-y-1">
-                {fallbackLog.map((msg, i) => (
-                  <p key={i} className="text-xs text-yellow-400 font-mono">{msg}</p>
-                ))}
+              <div className="px-5 py-1.5 bg-zinc-900 border-b border-zinc-800 flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></div>
+                <p className="text-xs text-zinc-500">Auto-optimizing model selection ({fallbackLog.length} switch{fallbackLog.length > 1 ? 'es' : ''})</p>
               </div>
             )}
 
             {/* FIX 4: Failed Chunks Summary */}
             {failedChunks.length > 0 && !isProcessing && (
-              <div className="px-5 py-3 bg-red-500/5 border-b border-red-500/20">
-                <p className="text-xs text-red-400 font-medium mb-1">
-                  {failedChunks.length} chunk(s) failed — {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} subtitle(s) missing
-                </p>
-                <p className="text-xs text-red-400/70 font-mono truncate">
-                  Failed IDs: {failedChunks.flatMap(f => f.subtitles.map(s => s.id)).join(', ')}
-                </p>
+              <div className="px-5 py-3 bg-amber-500/5 border-b border-amber-500/20 flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-amber-400 font-medium">
+                    {prompts.length} of {subtitles.length} prompts ready — {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} remaining
+                  </p>
+                  <p className="text-xs text-zinc-500 mt-0.5">Click "Retry" to recover remaining prompts</p>
+                </div>
               </div>
             )}
 
