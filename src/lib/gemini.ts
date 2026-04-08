@@ -1161,7 +1161,33 @@ ${subtitleInfo}`;
       throw new Error("Failed after max retries.");
     }
 
-    systemPrompt = basePrompt + contextBlock;
+    // FIX: Smart character card injection for History 3/4/5/8
+    if (historyConfig.needsCharacterCards && globalContext.mythology?.characters?.length) {
+      const myth = globalContext.mythology;
+      // Detect which characters appear in this chunk
+      const chunkText = chunk.map(s => s.text.toLowerCase()).join(' ');
+      const activeChars = myth.characters.filter(c => {
+        const nameParts = c.name.toLowerCase().split(/\s+/);
+        return nameParts.some(part => part.length > 2 && chunkText.includes(part));
+      });
+      const charsToInject = activeChars.length > 0 ? activeChars : myth.characters;
+
+      const characterCards = charsToInject.map(c =>
+        `CHARACTER: ${c.name} [Tier ${c.sacredTier}]\nFull: ${c.fullDescription}\nCondensed: ${c.condensedDescription}`
+      ).join('\n\n');
+
+      const colorGrading = myth.colorGradingMap?.length
+        ? '\nCOLOR GRADING MAP:\n' + myth.colorGradingMap.map(c => `${c.sceneType}: ${c.palette}`).join('\n')
+        : '';
+
+      systemPrompt = basePrompt + contextBlock + `
+
+CHARACTER CARDS (USE EXACTLY — NO DEVIATION):
+${characterCards}
+${colorGrading}`;
+    } else {
+      systemPrompt = basePrompt + contextBlock;
+    }
   } else if (isMythology && globalContext.mythology) {
     // MYTHOLOGY MODE: Full mythology system prompt with character cards
     systemPrompt = buildMythologyChunkPrompt(globalContext, settings, chunk);
