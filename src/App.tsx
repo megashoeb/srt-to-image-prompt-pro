@@ -514,8 +514,8 @@ Napoleon watches grimly from his vantage point.`;
                       const hc = getHistoryStyleConfig(newStyle)!;
                       setChunkSize(hc.chunkSize);
                       updates.eraOverride = 'Auto';
-                      if (hc.needsCharacterCards) updates.cameraAngleVariation = true;
-                      if (hc.needsSacredProtocol) updates.sacredProtocol = true;
+                      updates.cameraAngleVariation = true;
+                      updates.sacredProtocol = true;
                     }
                     setSettings(prev => ({ ...prev, ...updates }));
                   }}
