@@ -57,6 +57,83 @@ IF UNDER ${PROMPT_CONFIG.MIN_WORDS} WORDS → Add more environmental or historic
 `;
 
 // ============================================================
+// SHARED NANO BANANA OPTIMIZATION RULES (injected into all styles except Chalkboard)
+// ============================================================
+const NANO_BANANA_RULES = `
+NANO BANANA PROMPT FORMULA (EVERY PROMPT MUST FOLLOW):
+Write each prompt as ONE FLOWING NARRATIVE PARAGRAPH — NOT a keyword list.
+Nano Banana responds best to descriptive scene direction.
+
+Every prompt MUST contain these elements in this order:
+
+1. SUBJECT + EXPRESSION: Character with physical description + facial expression + body language.
+   - Read the subtitle context and INFER the correct emotional reaction.
+   - "News of defeat" → anguish, clenched jaw, tears
+   - "Victory celebration" → triumphant smile, arms raised, chest out
+   - "Plotting/scheming" → narrowed eyes, leaning forward, fingers steepled
+   - "Fear/dread" → wide eyes, pale face, trembling hands, hunched shoulders
+   - "Calm authority" → steady gaze, upright posture, measured gesture
+   - NEVER leave a character expressionless. Every person has a reaction.
+
+2. ACTION: What is physically happening — body language, gesture, movement.
+   - MUST be something a camera could photograph.
+   - WRONG: "Embodying the spirit of the empire"
+   - CORRECT: "Slamming a fist on the war table, sending clay markers scattering"
+
+3. LOCATION/CONTEXT: Specific sub-area of location + 2-3 physical environmental details.
+   - WRONG: "A palace"
+   - CORRECT: "The torch-lit war council chamber of the palace, cracked stone walls hung with faded battle tapestries, a heavy oak table covered in parchment maps"
+
+4. COMPOSITION + CAMERA/LENS: Shot type + focal length + aperture + depth of field.
+   Select based on dramatic content — NEVER repeat same shot type more than 2 consecutive times:
+   - Establishing/location → Ultra-wide, 16mm, deep DOF
+   - Army/crowd/battle scale → Wide shot, 24mm, deep DOF
+   - Character introduction/power → Low-angle hero shot, 24mm
+   - Character speaking/thinking → Medium close-up, 50mm, moderate DOF
+   - Emotional moment (grief/fear/pride) → Extreme close-up, 85mm, f/1.8 shallow DOF
+   - Two characters interacting → Over-the-shoulder, 35mm
+   - Divine/supernatural reveal → Low-angle 24mm, entity towering
+   - Battle action → Dynamic low-angle 24mm, motion energy
+   - Aftermath/death → High-angle bird's eye, looking down
+   - Suspense/mystery → 50mm, extreme contrast, deep shadows
+
+5. COLOR GRADING: Specific color tones matching scene mood (use color names, not hex codes).
+
+6. EMOTIONAL LIGHTING: Match lighting to emotional content:
+   - Fear/dread → Low-key harsh light, deep black shadows
+   - Pride/power/triumph → Rim lighting from behind, golden warm glow
+   - Sadness/loss → Overcast flat diffused, cold blue, no contrast
+   - Anger/battle/chaos → Warm flickering fire-lit, high contrast, red-amber
+   - Mystery/supernatural → Backlit silhouette, atmospheric fog, cold teal
+   - Peace/wisdom → Soft diffused golden light from above
+   - Loneliness → Single small light source in vast darkness
+   - Awe/revelation → Volumetric god-rays breaking through darkness
+
+7. MATERIALITY: ALWAYS describe specific materials and textures:
+   - NEVER "armor" → "layered bronze cuirass with embossed motifs and leather pteruges"
+   - NEVER "robe" → "heavy indigo-dyed linen with gold meander pattern at the hem"
+   - NEVER "sword" → "leaf-bladed bronze xiphos with ivory grip wrapped in ox-leather"
+   - NEVER "helmet" → "Corinthian bronze helmet with tall horsehair crest dyed crimson"
+   - NEVER "dress" → "silk brocade gown with pearl-sewn bodice and velvet underskirt"
+   - Include fabric textures, metal finishes, wood grains, stone surfaces.
+
+8. STYLE LOCK + ASPECT RATIO: Locked visual style DNA + "16:9 aspect ratio" at the end.
+
+SUBJECT VARIETY: NEVER repeat same subject more than 3 consecutive prompts.
+Even if 15 subtitles talk about one character, VARY the visual:
+- Show from DIFFERENT angles/distances
+- Show character's EFFECTS on environment
+- Show OBJECTS or PROPS in detail
+- Show OTHER BEINGS reacting
+- Show LANDSCAPE with character small in frame
+- Show EXTREME CLOSE-UP of hands, eyes, weapon
+
+POSITIVE FRAMING: Describe what you WANT, not what you don't want.
+WRONG: "no text, no watermark, no logo"
+CORRECT: "clean cinematic frame with only the described visual elements"
+`;
+
+// ============================================================
 // CHALKBOARD EDUCATIONAL STYLE — Complete System Prompt
 // ============================================================
 export const CHALKBOARD_STYLE = "Chalkboard Educational" as const;
@@ -456,7 +533,9 @@ Output JSON with wordCount and duration: [{"id": "1", "prompt": "...", "wordCoun
 };
 
 function getHistorySystemPrompt(style: string): string {
-  return HISTORY_SYSTEM_PROMPTS[style] || '';
+  const base = HISTORY_SYSTEM_PROMPTS[style] || '';
+  // Inject shared Nano Banana optimization rules into all history styles
+  return base + '\n' + NANO_BANANA_RULES;
 }
 
 function calculateHistoryMaxOutput(style: string, numSubtitles: number): number {
@@ -1216,8 +1295,8 @@ ${settings.enhancementToggle ? `- Enhancement: ULTRA-DETAILED MODE — Include e
       default: styleInstruction = "Cinematic realism.";
     }
 
-    systemPrompt = `You are an expert AI image prompt engineer specializing in historically accurate military and battle scenes.
-Your task is to convert a sequence of subtitles into standalone, highly detailed image generation prompts.
+    systemPrompt = `You are an expert AI image prompt engineer and cinematic visual director specializing in historically accurate scenes.
+Your task is to convert subtitle text into standalone, highly detailed, Nano Banana-optimized image generation prompts.
 
 GLOBAL CONTEXT:
 - Era: ${eraToUse}
@@ -1226,22 +1305,24 @@ GLOBAL CONTEXT:
 - Environment: ${globalContext.environment}
 - Tone: ${globalContext.tone}
 ${settings.consistencyLock ? `- Consistency Lock: Maintain strict visual consistency for the factions, uniforms, and environment mentioned above.` : ''}
+${settings.sacredProtocol ? `- Sacred Figure Protocol: ENABLED — Tier 1 Prophets shown as golden Noor silhouette only (no face/body). Tier 2 Angels as abstract luminous forms. Tier 3 Antagonists depictable with dignity. Tier 4 Others fully depictable.` : ''}
 
-SETTINGS:
-- Visual Style: ${styleInstruction}
+LOCKED VISUAL STYLE: ${styleInstruction}
 - Scene Intensity: ${settings.sceneIntensity}
-- Camera Angles: ${settings.cameraAngleVariation ? 'Vary camera angles (wide shots, close-ups, aerials) dynamically based on the action.' : 'Standard eye-level documentary composition.'}
 - Enhancement: ${settings.enhancementToggle ? 'ULTRA-DETAILED MODE: Include exhaustive details about fabric textures, dirt, sweat, lighting nuances, and atmospheric effects.' : 'Standard detail.'}
+
+${NANO_BANANA_RULES}
 
 ${PROMPT_LENGTH_INSTRUCTION}
 
 STRICT RULES:
 1. Create EXACTLY ONE image prompt per subtitle provided.
-2. Each prompt MUST be completely self-contained. Do not reference "the previous image" or use pronouns without context.
-3. Include specific historical details (accurate weapons, armor, clothing).
-4. NO fantasy, NO magic, NO futuristic elements. Realistic historical depiction only.
-5. Describe Who, What, Where, and Visual Style in every prompt.
-6. ALWAYS respond with a valid JSON array only. No markdown, no explanation, no extra text.
+2. Each prompt MUST be a FLOWING NARRATIVE PARAGRAPH — not a keyword list.
+3. Include specific historical details with MATERIALITY (specific metals, fabrics, textures).
+4. Include CHARACTER EXPRESSION and BODY LANGUAGE matching the subtitle's emotional context.
+5. Include CAMERA/LENS specification (focal length, aperture, DOF).
+6. Include EMOTIONAL LIGHTING matching the scene mood.
+7. ALWAYS respond with a valid JSON array only. No markdown, no explanation, no extra text.
 `;
   }
 
