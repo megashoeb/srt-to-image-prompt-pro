@@ -169,10 +169,25 @@ export default function App() {
     }
   };
 
-  // FIX 4: Retry failed chunks
-  const retryFailed = async () => {
-    if (failedChunks.length === 0 || !globalContext) return;
+  // Retry failed/missing chunks — accepts optional chunks override
+  const retryFailed = async (overrideChunks?: FailedChunk[]) => {
+    const chunksToRetry = overrideChunks || failedChunks;
 
+    // If no explicit chunks, build from missing IDs
+    if (chunksToRetry.length === 0 && prompts.length < subtitles.length && globalContext) {
+      const existingIds = new Set(prompts.map(p => p.id));
+      const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
+      if (missingSubs.length === 0) return;
+      const built: FailedChunk[] = [];
+      for (let i = 0; i < missingSubs.length; i += chunkSize) {
+        built.push({ chunkIndex: i, subtitles: missingSubs.slice(i, i + chunkSize), error: 'Missing' });
+      }
+      return retryFailed(built);
+    }
+
+    if (chunksToRetry.length === 0 || !globalContext) return;
+
+    setApiKeys(apiKeysText.split('\n').filter(k => k.trim()));
     setIsProcessing(true);
     setError(null);
     setFallbackLog([]);
@@ -180,7 +195,7 @@ export default function App() {
 
     try {
       const result = await retryFailedChunks(
-        failedChunks,
+        chunksToRetry,
         globalContext,
         settings,
         (retryPrompts, processedCount, total, status) => {
@@ -190,10 +205,12 @@ export default function App() {
         handleFallback
       );
 
-      // Merge recovered prompts with existing ones
       const merged = [...previousPrompts, ...result.prompts];
       merged.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
-      setPrompts(merged);
+      // Deduplicate by ID
+      const seen = new Set<string>();
+      const deduped = merged.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
+      setPrompts(deduped);
       setFailedChunks(result.failedChunks);
 
       if (result.failedChunks.length > 0) {
@@ -780,14 +797,14 @@ Napoleon watches grimly from his vantage point.`;
               )}
             </button>
 
-            {/* Recover remaining prompts button */}
-            {failedChunks.length > 0 && !isProcessing && (
+            {/* Recover remaining prompts — visible when ANY prompts are missing */}
+            {prompts.length > 0 && prompts.length < subtitles.length && !isProcessing && (
               <button
-                onClick={retryFailed}
+                onClick={() => retryFailed()}
                 className="w-full mt-3 bg-amber-600 hover:bg-amber-500 text-white font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Recover {failedChunks.reduce((s, f) => s + f.subtitles.length, 0)} Remaining Prompts
+                Recover {subtitles.length - prompts.length} Remaining Prompts
               </button>
             )}
 
