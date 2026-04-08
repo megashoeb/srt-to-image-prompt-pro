@@ -553,32 +553,18 @@ Napoleon watches grimly from his vantage point.`;
                       Dark fantasy cinematic style for mythology videos. Character consistency via auto-generated Character Cards, era-accurate details, dramatic lighting. Best for: Mythology, ancient history, fantasy storytelling.
                     </p>
                   </div>
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center">
-                        <input type="checkbox" className="sr-only" checked={settings.sacredProtocol}
-                          onChange={e => setSettings({...settings, sacredProtocol: e.target.checked})} />
-                        <div className={cn("w-10 h-5 rounded-full transition-colors", settings.sacredProtocol ? "bg-emerald-500" : "bg-zinc-700")}></div>
-                        <div className={cn("absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform", settings.sacredProtocol ? "translate-x-5" : "translate-x-0")}></div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Sacred Figure Protocol</span>
-                      </div>
-                    </label>
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center">
-                        <input type="checkbox" className="sr-only" checked={settings.veoEnabled}
-                          onChange={e => setSettings({...settings, veoEnabled: e.target.checked})} />
-                        <div className={cn("w-10 h-5 rounded-full transition-colors", settings.veoEnabled ? "bg-blue-500" : "bg-zinc-700")}></div>
-                        <div className={cn("absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform", settings.veoEnabled ? "translate-x-5" : "translate-x-0")}></div>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <Video className="w-3.5 h-3.5 text-blue-400" />
-                        <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Veo Video Prompts</span>
-                      </div>
-                    </label>
-                  </div>
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex items-center">
+                      <input type="checkbox" className="sr-only" checked={settings.veoEnabled}
+                        onChange={e => setSettings({...settings, veoEnabled: e.target.checked})} />
+                      <div className={cn("w-10 h-5 rounded-full transition-colors", settings.veoEnabled ? "bg-blue-500" : "bg-zinc-700")}></div>
+                      <div className={cn("absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform", settings.veoEnabled ? "translate-x-5" : "translate-x-0")}></div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <Video className="w-3.5 h-3.5 text-blue-400" />
+                      <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Veo Video Prompts</span>
+                    </div>
+                  </label>
                 </div>
               )}
 
@@ -596,31 +582,6 @@ Napoleon watches grimly from his vantage point.`;
                       </p>
                     </div>
                   </div>
-                  {historyConfig.needsSacredProtocol && (
-                    <div className="space-y-2">
-                      <label className="flex items-center gap-3 cursor-pointer group">
-                        <div className="relative flex items-center">
-                          <input type="checkbox" className="sr-only" checked={settings.sacredProtocol}
-                            onChange={e => setSettings({...settings, sacredProtocol: e.target.checked})} />
-                          <div className={cn("w-10 h-5 rounded-full transition-colors", settings.sacredProtocol ? "bg-emerald-500" : "bg-zinc-700")}></div>
-                          <div className={cn("absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform", settings.sacredProtocol ? "translate-x-5" : "translate-x-0")}></div>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Sacred Figure Protocol</span>
-                        </div>
-                      </label>
-                      {settings.sacredProtocol && (
-                        <div className="p-2.5 bg-emerald-500/5 border border-emerald-500/15 rounded-lg text-xs text-emerald-300/70 space-y-1">
-                          <p className="font-medium text-emerald-400">Sacred Tiers Active:</p>
-                          <p>Tier 1 Prophets — Golden Noor light only, no face/body</p>
-                          <p>Tier 2 Angels — Abstract luminous forms, no face</p>
-                          <p>Tier 3 Antagonists — Face shown, dignified depiction</p>
-                          <p>Tier 4 Others — Fully depictable</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -733,6 +694,32 @@ Napoleon watches grimly from his vantage point.`;
                     </div>
                     <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Dynamic Camera Angles</span>
                   </label>
+                )}
+
+                {/* Sacred Figure Protocol — all styles except chalkboard */}
+                {!isChalkboard && (
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-3 cursor-pointer group">
+                      <div className="relative flex items-center">
+                        <input type="checkbox" className="sr-only" checked={settings.sacredProtocol}
+                          onChange={e => setSettings({...settings, sacredProtocol: e.target.checked})} />
+                        <div className={cn("w-10 h-5 rounded-full transition-colors", settings.sacredProtocol ? "bg-emerald-500" : "bg-zinc-700")}></div>
+                        <div className={cn("absolute left-1 top-1 w-3 h-3 rounded-full bg-white transition-transform", settings.sacredProtocol ? "translate-x-5" : "translate-x-0")}></div>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Shield className="w-3.5 h-3.5 text-emerald-400" />
+                        <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Sacred Figure Protocol</span>
+                      </div>
+                    </label>
+                    {settings.sacredProtocol && (
+                      <div className="p-2.5 bg-emerald-500/5 border border-emerald-500/15 rounded-lg text-xs text-emerald-300/70 space-y-1 ml-[52px]">
+                        <p>T1 Prophets — Noor light only</p>
+                        <p>T2 Angels — Abstract luminous</p>
+                        <p>T3 Antagonists — Depictable</p>
+                        <p>T4 Others — Fully depictable</p>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Scene Intensity — hidden for chalkboard, different options for mythology */}

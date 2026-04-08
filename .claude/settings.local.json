@@ -8,7 +8,9 @@
       "Bash(node node_modules/typescript/bin/tsc --noEmit)",
       "Bash(npm run:*)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(gh api:*)",
+      "Bash(gh repo:*)"
     ]
   }
 }
