@@ -601,16 +601,16 @@ export function calculateOptimalChunking(
   // Max by tokens: how many prompts fit in safe output
   const maxByTokens = Math.floor(SAFE_OUTPUT_LIMIT / (OUTPUT_PER_PROMPT * BUFFER_MULTIPLIER));
   // Max by JSON reliability: larger chunks = more JSON corruption risk
-  const maxByReliability = 7;
-  // Use the smaller, capped at 5 for extra safety
-  const chunkSize = Math.min(maxByTokens, maxByReliability, 5);
+  const maxByReliability = 10;
+  // Use the smaller, capped at 8 for speed
+  const chunkSize = Math.min(maxByTokens, maxByReliability, 8);
 
   const totalChunks = Math.ceil(totalSubtitles / chunkSize);
   const tokensPerChunk = (INPUT_PER_SUBTITLE * chunkSize) + SYSTEM_PROMPT_TOKENS + (OUTPUT_PER_PROMPT * chunkSize);
 
-  // Time estimate: ~1 call per 5 seconds per key
+  // Time estimate: ~12 seconds per call (2s delay + ~10s response)
   const effectiveKeys = Math.max(1, numApiKeys);
-  const totalSeconds = Math.ceil((totalChunks / effectiveKeys) * 5);
+  const totalSeconds = Math.ceil((totalChunks / effectiveKeys) * 12);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const estimatedTimeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
@@ -647,9 +647,9 @@ class RateLimiter {
   private maxRpm: number;
   private maxTpm: number;
   // MODULE 4: Minimum delay between calls on same key
-  private static INTER_REQUEST_DELAY_MS = 4800; // ~12.5 RPM
+  private static INTER_REQUEST_DELAY_MS = 2000; // ~14 RPM per key
 
-  constructor(maxRpm: number = 13, maxTpm: number = 230_000) {
+  constructor(maxRpm: number = 14, maxTpm: number = 230_000) {
     this.maxRpm = maxRpm;
     this.maxTpm = maxTpm;
   }
@@ -1024,7 +1024,7 @@ async function callWithFallback(
         // 429 Rate Limit — wait longer, retry same model
         if (status === 429) {
           retries++;
-          const waitSec = 5 + (retries * 3); // 8s, 11s, 14s
+          const waitSec = 3 + (retries * 2); // 5s, 7s, 9s
           console.warn(`Rate limited on "${model}" (retry ${retries}). Waiting ${waitSec}s...`);
           await sleep(waitSec * 1000);
           continue;
@@ -1034,7 +1034,7 @@ async function callWithFallback(
         if (status === 500 || status === 503 || !status) {
           retries++;
           if (retries < MAX_RETRIES_SAME_MODEL) {
-            const waitSec = 2 + (retries * 2); // 4s, 6s
+            const waitSec = 1 + retries; // 2s, 3s
             console.warn(`Server error on "${model}" (retry ${retries}/${MAX_RETRIES_SAME_MODEL}). Waiting ${waitSec}s...`);
             await sleep(waitSec * 1000);
             continue; // Retry SAME model

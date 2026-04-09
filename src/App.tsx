@@ -43,7 +43,7 @@ export default function App() {
     sacredProtocol: false,
     veoEnabled: false,
   });
-  const [chunkSize, setChunkSize] = useState(5);
+  const [chunkSize, setChunkSize] = useState(8);
   const [autoChunk, setAutoChunk] = useState(true);
   const [preflight, setPreflight] = useState<ChunkCalculation | null>(null);
 
@@ -169,7 +169,7 @@ export default function App() {
         });
 
         // Wait 5 seconds before retry
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 3000));
 
         const retryResult = await retryFailedChunks(
           currentFailed, context, settings,
