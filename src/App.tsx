@@ -205,12 +205,11 @@ export default function App() {
       if (missingIds.length === 0) {
         setProgress({ current: subtitles.length, total: subtitles.length, status: 'Complete! All prompts generated.' });
       } else {
-        // Some prompts lost inside successful chunks — build retry chunks for them
+        // Some prompts lost inside successful chunks — send each individually
         const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
-        const missingChunks: FailedChunk[] = [];
-        for (let i = 0; i < missingSubs.length; i += chunkSize) {
-          missingChunks.push({ chunkIndex: i, subtitles: missingSubs.slice(i, i + chunkSize), error: 'Missing from response' });
-        }
+        const missingChunks: FailedChunk[] = missingSubs.map((s, i) => ({
+          chunkIndex: i, subtitles: [s], error: 'Missing from response'
+        }));
         setFailedChunks(missingChunks);
         setProgress({
           current: currentPrompts.length,
@@ -232,15 +231,15 @@ export default function App() {
   const retryFailed = async (overrideChunks?: FailedChunk[]) => {
     const chunksToRetry = overrideChunks || failedChunks;
 
-    // If no explicit chunks, build from missing IDs
+    // If no explicit chunks, build from missing IDs — send EACH subtitle individually
     if (chunksToRetry.length === 0 && prompts.length < subtitles.length && globalContext) {
       const existingIds = new Set(prompts.map(p => p.id));
       const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
       if (missingSubs.length === 0) return;
-      const built: FailedChunk[] = [];
-      for (let i = 0; i < missingSubs.length; i += chunkSize) {
-        built.push({ chunkIndex: i, subtitles: missingSubs.slice(i, i + chunkSize), error: 'Missing' });
-      }
+      // Chunk size 1 per missing subtitle — prevents model from skipping any
+      const built: FailedChunk[] = missingSubs.map((s, i) => ({
+        chunkIndex: i, subtitles: [s], error: 'Missing'
+      }));
       return retryFailed(built);
     }
 
@@ -280,12 +279,11 @@ export default function App() {
         setFailedChunks([]);
         setProgress({ current: subtitles.length, total: subtitles.length, status: `Complete! All ${subtitles.length} prompts generated.` });
       } else {
-        // Build failedChunks from still-missing IDs
+        // Build failedChunks — each missing subtitle individually
         const stillMissingSubs = subtitles.filter(s => !recoveredIds.has(s.id));
-        const newFailed: FailedChunk[] = [];
-        for (let i = 0; i < stillMissingSubs.length; i += chunkSize) {
-          newFailed.push({ chunkIndex: i, subtitles: stillMissingSubs.slice(i, i + chunkSize), error: 'Still missing' });
-        }
+        const newFailed: FailedChunk[] = stillMissingSubs.map((s, i) => ({
+          chunkIndex: i, subtitles: [s], error: 'Still missing'
+        }));
         setFailedChunks(newFailed);
         setProgress({ current: deduped.length, total: subtitles.length, status: `${deduped.length}/${subtitles.length} done — ${stillMissingIds.length} still missing` });
         setError(`${stillMissingIds.length} prompts still missing. IDs: ${stillMissingIds.join(', ')}`);
