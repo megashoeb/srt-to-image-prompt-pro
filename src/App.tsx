@@ -158,7 +158,7 @@ export default function App() {
       setPrompts(currentPrompts);
       setFailedChunks(currentFailed);
 
-      // Auto-retry up to 3 times with 5s gap
+      // Auto-retry up to 3 times with 3s gap
       const MAX_AUTO_RETRIES = 3;
       for (let autoRetry = 1; autoRetry <= MAX_AUTO_RETRIES && currentFailed.length > 0; autoRetry++) {
         const missingCount = currentFailed.reduce((s, fc) => s + fc.subtitles.length, 0);
@@ -168,8 +168,10 @@ export default function App() {
           status: `Auto-recovering ${missingCount} missing prompts (attempt ${autoRetry}/${MAX_AUTO_RETRIES})...`
         });
 
-        // Wait 5 seconds before retry
+        // Wait 3s then re-initialize keys (clears blacklists for fresh retry)
         await new Promise(resolve => setTimeout(resolve, 3000));
+        const allRetryKeys = [...primaryKeys, ...backupKeys];
+        setApiKeys(allRetryKeys);
 
         const retryResult = await retryFailedChunks(
           currentFailed, context, settings,
