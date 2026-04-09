@@ -198,18 +198,26 @@ export default function App() {
         if (currentFailed.length === 0) break;
       }
 
-      // Final status
-      if (currentPrompts.length >= subtitles.length) {
+      // Final status — check actual prompt IDs vs subtitle IDs (not just count)
+      const existingIds = new Set(currentPrompts.map(p => p.id));
+      const missingIds = subtitles.filter(s => !existingIds.has(s.id)).map(s => s.id);
+
+      if (missingIds.length === 0) {
         setProgress({ current: subtitles.length, total: subtitles.length, status: 'Complete! All prompts generated.' });
       } else {
-        const missing = subtitles.length - currentPrompts.length;
-        const missingIds = subtitles.filter(s => !currentPrompts.some(p => p.id === s.id)).map(s => s.id);
+        // Some prompts lost inside successful chunks — build retry chunks for them
+        const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
+        const missingChunks: FailedChunk[] = [];
+        for (let i = 0; i < missingSubs.length; i += chunkSize) {
+          missingChunks.push({ chunkIndex: i, subtitles: missingSubs.slice(i, i + chunkSize), error: 'Missing from response' });
+        }
+        setFailedChunks(missingChunks);
         setProgress({
           current: currentPrompts.length,
           total: subtitles.length,
-          status: `${currentPrompts.length}/${subtitles.length} done — ${missing} prompts need manual recovery`
+          status: `${currentPrompts.length}/${subtitles.length} done — ${missingIds.length} prompts need recovery`
         });
-        setError(`${missing} prompts still missing after 3 auto-retries. Missing IDs: ${missingIds.join(', ')}. Click "Recover" to try again.`);
+        setError(`${missingIds.length} prompts still missing. IDs: ${missingIds.join(', ')}. Click "Recover" to try again.`);
       }
     } catch (err: unknown) {
       console.error(err);
@@ -263,12 +271,24 @@ export default function App() {
       const seen = new Set<string>();
       const deduped = merged.filter(p => { if (seen.has(p.id)) return false; seen.add(p.id); return true; });
       setPrompts(deduped);
-      setFailedChunks(result.failedChunks);
 
-      if (result.failedChunks.length > 0) {
-        setError(`${result.failedChunks.reduce((s: number, f: FailedChunk) => s + f.subtitles.length, 0)} prompts still pending. Try again in a moment.`);
+      // Check actual missing by ID comparison
+      const recoveredIds = new Set(deduped.map(p => p.id));
+      const stillMissingIds = subtitles.filter(s => !recoveredIds.has(s.id)).map(s => s.id);
+
+      if (stillMissingIds.length === 0) {
+        setFailedChunks([]);
+        setProgress({ current: subtitles.length, total: subtitles.length, status: `Complete! All ${subtitles.length} prompts generated.` });
       } else {
-        setProgress({ current: subtitles.length, total: subtitles.length, status: 'All chunks recovered!' });
+        // Build failedChunks from still-missing IDs
+        const stillMissingSubs = subtitles.filter(s => !recoveredIds.has(s.id));
+        const newFailed: FailedChunk[] = [];
+        for (let i = 0; i < stillMissingSubs.length; i += chunkSize) {
+          newFailed.push({ chunkIndex: i, subtitles: stillMissingSubs.slice(i, i + chunkSize), error: 'Still missing' });
+        }
+        setFailedChunks(newFailed);
+        setProgress({ current: deduped.length, total: subtitles.length, status: `${deduped.length}/${subtitles.length} done — ${stillMissingIds.length} still missing` });
+        setError(`${stillMissingIds.length} prompts still missing. IDs: ${stillMissingIds.join(', ')}`);
       }
     } catch (err: unknown) {
       console.error(err);
