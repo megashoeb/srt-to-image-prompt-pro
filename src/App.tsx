@@ -177,10 +177,16 @@ export default function App() {
         const allRetryKeys = [...primaryKeys, ...backupKeys];
         setApiKeys(allRetryKeys);
 
-        // Build individual chunks (1 subtitle each) — prevents model from skipping any
-        const individualChunks: FailedChunk[] = missingSubs.map((s, i) => ({
-          chunkIndex: i, subtitles: [s], error: 'Missing'
-        }));
+        // Build chunks of 3 — fast + rarely skipped by model
+        const RETRY_CHUNK_SIZE = autoRetry === MAX_AUTO_RETRIES ? 1 : 3;
+        const individualChunks: FailedChunk[] = [];
+        for (let i = 0; i < missingSubs.length; i += RETRY_CHUNK_SIZE) {
+          individualChunks.push({
+            chunkIndex: i,
+            subtitles: missingSubs.slice(i, i + RETRY_CHUNK_SIZE),
+            error: 'Missing'
+          });
+        }
 
         const retryResult = await retryFailedChunks(
           individualChunks, context, settings,
@@ -238,15 +244,21 @@ export default function App() {
   const retryFailed = async (overrideChunks?: FailedChunk[]) => {
     const chunksToRetry = overrideChunks || failedChunks;
 
-    // If no explicit chunks, build from missing IDs — send EACH subtitle individually
+    // If no explicit chunks, build from missing IDs — chunks of 3 for speed
     if (chunksToRetry.length === 0 && prompts.length < subtitles.length && globalContext) {
       const existingIds = new Set(prompts.map(p => p.id));
       const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
       if (missingSubs.length === 0) return;
-      // Chunk size 1 per missing subtitle — prevents model from skipping any
-      const built: FailedChunk[] = missingSubs.map((s, i) => ({
-        chunkIndex: i, subtitles: [s], error: 'Missing'
-      }));
+      // Chunk size 3 — fast + rarely skipped by model
+      const RETRY_CHUNK_SIZE = 3;
+      const built: FailedChunk[] = [];
+      for (let i = 0; i < missingSubs.length; i += RETRY_CHUNK_SIZE) {
+        built.push({
+          chunkIndex: i,
+          subtitles: missingSubs.slice(i, i + RETRY_CHUNK_SIZE),
+          error: 'Missing'
+        });
+      }
       return retryFailed(built);
     }
 

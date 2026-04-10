@@ -987,7 +987,7 @@ async function callWithFallback(
   for (let i = 0; i < modelsToTry.length; i++) {
     const model = modelsToTry[i];
     let retries = 0;
-    const MAX_RETRIES_SAME_MODEL = 3; // Retry same model 3 times before switching
+    const MAX_RETRIES_SAME_MODEL = 2; // Retry same model 2 times before switching (faster failure)
 
     while (retries < MAX_RETRIES_SAME_MODEL) {
       try {
@@ -1355,7 +1355,7 @@ ${chunkData}`;
       ? calculateHistoryMaxOutput(settings.style, chunk.length)
       : calculateMaxOutputTokens(chunk.length);
 
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 2; // Reduced from 3 — faster failure, outer auto-retry handles it
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     if (attempt > 1) await rateLimiter.waitForSlot(clientInfo.keyId);
     try {
