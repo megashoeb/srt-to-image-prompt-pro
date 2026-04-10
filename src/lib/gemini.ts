@@ -1338,7 +1338,14 @@ STRICT RULES:
     : `[{"id": "1", "prompt": "A detailed scene of..."}, {"id": "2", "prompt": "..."}]`;
 
   const wordRange = isMythology ? `${PROMPT_CONFIG.MIN_WORDS}-280` : `${PROMPT_CONFIG.MIN_WORDS}-${PROMPT_CONFIG.MAX_WORDS}`;
-  const contents = `Generate exactly ${chunk.length} image prompts (one per subtitle). Each prompt MUST be ${wordRange} words.${isMythology && settings.veoEnabled ? ' Also generate a videoPrompt for each.' : ''}
+
+  // AGGRESSIVE MODE: When only 1 subtitle, emphasize that model MUST return it
+  const singleSubtitleMode = chunk.length === 1;
+  const aggressiveHeader = singleSubtitleMode
+    ? `CRITICAL: You MUST generate a prompt for the subtitle with ID "${chunk[0].id}". Do NOT skip it. Do NOT return an empty array. Return exactly 1 prompt with id "${chunk[0].id}".\n\n`
+    : '';
+
+  const contents = `${aggressiveHeader}Generate exactly ${chunk.length} image prompt${chunk.length > 1 ? 's' : ''} (one per subtitle). Each prompt MUST be ${wordRange} words.${isMythology && settings.veoEnabled ? ' Also generate a videoPrompt for each.' : ''}
 Return ONLY a valid JSON array. No markdown, no explanation.
 
 Example format:
@@ -1346,7 +1353,7 @@ ${exampleFormat}
 
 Subtitles:
 
-${chunkData}`;
+${chunkData}${singleSubtitleMode ? `\n\nREMINDER: Return exactly 1 prompt with id "${chunk[0].id}" — do not skip this.` : ''}`;
 
   // MODULE 3: Calculate maxOutputTokens for this chunk
   const maxOutputTokens = isMythology

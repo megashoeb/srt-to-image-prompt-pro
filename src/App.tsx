@@ -177,8 +177,10 @@ export default function App() {
         const allRetryKeys = [...primaryKeys, ...backupKeys];
         setApiKeys(allRetryKeys);
 
-        // Build chunks of 3 — fast + rarely skipped by model
-        const RETRY_CHUNK_SIZE = autoRetry === MAX_AUTO_RETRIES ? 1 : 3;
+        // Adaptive chunk size based on remaining count and attempt
+        // Few missing OR last attempt → chunks of 1 (reliable)
+        // Many missing + early attempt → chunks of 3 (fast)
+        const RETRY_CHUNK_SIZE = (missingSubs.length <= 5 || autoRetry === MAX_AUTO_RETRIES) ? 1 : 3;
         const individualChunks: FailedChunk[] = [];
         for (let i = 0; i < missingSubs.length; i += RETRY_CHUNK_SIZE) {
           individualChunks.push({
@@ -244,13 +246,13 @@ export default function App() {
   const retryFailed = async (overrideChunks?: FailedChunk[]) => {
     const chunksToRetry = overrideChunks || failedChunks;
 
-    // If no explicit chunks, build from missing IDs — chunks of 3 for speed
+    // If no explicit chunks, build from missing IDs — adaptive chunk size
     if (chunksToRetry.length === 0 && prompts.length < subtitles.length && globalContext) {
       const existingIds = new Set(prompts.map(p => p.id));
       const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
       if (missingSubs.length === 0) return;
-      // Chunk size 3 — fast + rarely skipped by model
-      const RETRY_CHUNK_SIZE = 3;
+      // Adaptive chunk size: few missing = individual for reliability
+      const RETRY_CHUNK_SIZE = missingSubs.length <= 5 ? 1 : 3;
       const built: FailedChunk[] = [];
       for (let i = 0; i < missingSubs.length; i += RETRY_CHUNK_SIZE) {
         built.push({
