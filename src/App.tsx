@@ -158,23 +158,32 @@ export default function App() {
       setPrompts(currentPrompts);
       setFailedChunks(currentFailed);
 
-      // Auto-retry up to 3 times with 3s gap
+      // Auto-retry up to 3 times — always rebuild from missing IDs (not failed chunks)
       const MAX_AUTO_RETRIES = 3;
-      for (let autoRetry = 1; autoRetry <= MAX_AUTO_RETRIES && currentFailed.length > 0; autoRetry++) {
-        const missingCount = currentFailed.reduce((s, fc) => s + fc.subtitles.length, 0);
+      for (let autoRetry = 1; autoRetry <= MAX_AUTO_RETRIES; autoRetry++) {
+        // Check actual missing by ID comparison (not failedChunks)
+        const existingIds = new Set(currentPrompts.map(p => p.id));
+        const missingSubs = subtitles.filter(s => !existingIds.has(s.id));
+        if (missingSubs.length === 0) break;
+
         setProgress({
           current: currentPrompts.length,
           total: subtitles.length,
-          status: `Auto-recovering ${missingCount} missing prompts (attempt ${autoRetry}/${MAX_AUTO_RETRIES})...`
+          status: `Auto-recovering ${missingSubs.length} missing prompts (attempt ${autoRetry}/${MAX_AUTO_RETRIES})...`
         });
 
-        // Wait 3s then re-initialize keys (clears blacklists for fresh retry)
-        await new Promise(resolve => setTimeout(resolve, 3000));
+        // Short wait + fresh key init
+        await new Promise(resolve => setTimeout(resolve, 1000));
         const allRetryKeys = [...primaryKeys, ...backupKeys];
         setApiKeys(allRetryKeys);
 
+        // Build individual chunks (1 subtitle each) — prevents model from skipping any
+        const individualChunks: FailedChunk[] = missingSubs.map((s, i) => ({
+          chunkIndex: i, subtitles: [s], error: 'Missing'
+        }));
+
         const retryResult = await retryFailedChunks(
-          currentFailed, context, settings,
+          individualChunks, context, settings,
           (retryPrompts, processedCount, total, status) => {
             const merged = [...currentPrompts, ...retryPrompts];
             merged.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
@@ -194,8 +203,6 @@ export default function App() {
         currentFailed = retryResult.failedChunks;
         setPrompts(currentPrompts);
         setFailedChunks(currentFailed);
-
-        if (currentFailed.length === 0) break;
       }
 
       // Final status — check actual prompt IDs vs subtitle IDs (not just count)
