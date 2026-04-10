@@ -43,7 +43,7 @@ export default function App() {
     sacredProtocol: false,
     veoEnabled: false,
   });
-  const [chunkSize, setChunkSize] = useState(8);
+  const [chunkSize, setChunkSize] = useState(5);
   const [autoChunk, setAutoChunk] = useState(true);
   const [preflight, setPreflight] = useState<ChunkCalculation | null>(null);
 

@@ -601,16 +601,16 @@ export function calculateOptimalChunking(
   // Max by tokens: how many prompts fit in safe output
   const maxByTokens = Math.floor(SAFE_OUTPUT_LIMIT / (OUTPUT_PER_PROMPT * BUFFER_MULTIPLIER));
   // Max by JSON reliability: larger chunks = more JSON corruption risk
-  const maxByReliability = 10;
-  // Use the smaller, capped at 8 for speed
-  const chunkSize = Math.min(maxByTokens, maxByReliability, 8);
+  const maxByReliability = 7;
+  // Use the smaller, capped at 5 for faster per-call response
+  const chunkSize = Math.min(maxByTokens, maxByReliability, 5);
 
   const totalChunks = Math.ceil(totalSubtitles / chunkSize);
   const tokensPerChunk = (INPUT_PER_SUBTITLE * chunkSize) + SYSTEM_PROMPT_TOKENS + (OUTPUT_PER_PROMPT * chunkSize);
 
-  // Time estimate: ~12 seconds per call (2s delay + ~10s response)
-  const effectiveKeys = Math.max(1, numApiKeys);
-  const totalSeconds = Math.ceil((totalChunks / effectiveKeys) * 12);
+  // Time estimate: ~8 seconds per call with 2 workers per key
+  const effectiveKeys = Math.max(1, numApiKeys * 2);
+  const totalSeconds = Math.ceil((totalChunks / effectiveKeys) * 8);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const estimatedTimeStr = minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
@@ -647,7 +647,7 @@ class RateLimiter {
   private maxRpm: number;
   private maxTpm: number;
   // MODULE 4: Minimum delay between calls on same key
-  private static INTER_REQUEST_DELAY_MS = 2000; // ~14 RPM per key
+  private static INTER_REQUEST_DELAY_MS = 0; // Removed — rely on RPM window only
 
   constructor(maxRpm: number = 14, maxTpm: number = 230_000) {
     this.maxRpm = maxRpm;
@@ -1420,30 +1420,27 @@ export async function processAllChunks(
   let nextChunkIdx = 0;
   let processedCount = 0;
 
-  async function worker(keyIndex: number) {
+  // SPEED: Worker dynamically picks least-recently-used healthy key (not bound to keyIndex)
+  async function worker(workerId: number) {
     while (true) {
       const ci = nextChunkIdx;
       if (ci >= chunks.length) break;
       nextChunkIdx++;
 
       const chunk = chunks[ci];
-      const clientInfo = keyPool.getClientByIndex(keyIndex);
-
-      let activeClient = clientInfo;
-      if (keyPool.isBlacklisted(clientInfo.keyId)) {
-        const alt = keyPool.getNextClient();
-        if (!alt) {
-          failedChunks.push({ chunkIndex: ci, subtitles: chunk.subtitles, error: 'All API keys blacklisted' });
-          processedCount += chunk.subtitles.length;
-          onProgress([...allPrompts], processedCount, total, `Chunk ${ci + 1} failed (all keys down)`);
-          continue;
-        }
-        activeClient = alt;
+      // Dynamic key selection — LRU healthy key
+      const activeClient = keyPool.getNextClient();
+      if (!activeClient) {
+        failedChunks.push({ chunkIndex: ci, subtitles: chunk.subtitles, error: 'All API keys blacklisted' });
+        processedCount += chunk.subtitles.length;
+        onProgress([...allPrompts], processedCount, total, `Chunk ${ci + 1} failed (all keys down)`);
+        continue;
       }
 
       try {
         const prompts = await generateChunkWithClient(chunk.subtitles, globalContext, settings, activeClient, onFallback);
         allPrompts.push(...prompts);
+        keyPool.reportSuccess(activeClient.keyId);
       } catch (err: unknown) {
         keyPool.reportFailure(activeClient.keyId);
         const errMsg = (err as { message?: string })?.message || String(err);
@@ -1451,7 +1448,6 @@ export async function processAllChunks(
       }
 
       processedCount += chunk.subtitles.length;
-      // Sort before sending to UI so prompts always appear in order
       const sorted = [...allPrompts].sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
       const failedCount = failedChunks.length;
       const statusMsg = failedCount > 0
@@ -1461,8 +1457,10 @@ export async function processAllChunks(
     }
   }
 
-  const workerCount = Math.max(1, keyPool.getKeyCount());
-  await Promise.all(Array.from({ length: workerCount }, (_, i) => worker(i)));
+  // SPEED: 2 workers per key = 2x parallelism (Google API handles concurrent requests per key fine)
+  const workersPerKey = 2;
+  const totalWorkers = Math.max(1, keyPool.getKeyCount() * workersPerKey);
+  await Promise.all(Array.from({ length: totalWorkers }, (_, i) => worker(i)));
 
   allPrompts.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
   return { prompts: allPrompts, failedChunks };
@@ -1483,26 +1481,20 @@ export async function retryFailedChunks(
   let nextIdx = 0;
   let processedCount = 0;
 
-  // Parallel worker — same as main processAllChunks
-  async function worker(keyIndex: number) {
+  // Parallel worker — dynamic key selection (LRU healthy)
+  async function worker(_workerId: number) {
     while (true) {
       const ci = nextIdx;
       if (ci >= failedChunks.length) break;
       nextIdx++;
 
       const fc = failedChunks[ci];
-      const clientInfo = keyPool.getClientByIndex(keyIndex);
-
-      let activeClient = clientInfo;
-      if (keyPool.isBlacklisted(clientInfo.keyId)) {
-        const alt = keyPool.getNextClient();
-        if (!alt) {
-          stillFailed.push({ ...fc, error: 'All API keys blacklisted' });
-          processedCount += fc.subtitles.length;
-          onProgress([...allPrompts], processedCount, total, `Recovery paused (keys cooling down)`);
-          continue;
-        }
-        activeClient = alt;
+      const activeClient = keyPool.getNextClient();
+      if (!activeClient) {
+        stillFailed.push({ ...fc, error: 'All API keys blacklisted' });
+        processedCount += fc.subtitles.length;
+        onProgress([...allPrompts], processedCount, total, `Recovery paused (keys cooling down)`);
+        continue;
       }
 
       try {
@@ -1520,9 +1512,10 @@ export async function retryFailedChunks(
     }
   }
 
-  // Launch parallel workers — one per key
-  const workerCount = Math.max(1, keyPool.getKeyCount());
-  await Promise.all(Array.from({ length: workerCount }, (_, i) => worker(i)));
+  // 2 workers per key for 2x parallel recovery
+  const workersPerKey = 2;
+  const totalWorkers = Math.max(1, keyPool.getKeyCount() * workersPerKey);
+  await Promise.all(Array.from({ length: totalWorkers }, (_, i) => worker(i)));
 
   allPrompts.sort((a, b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
   return { prompts: allPrompts, failedChunks: stillFailed };
