@@ -338,6 +338,7 @@ export const HISTORY_STYLES: Record<string, HistoryStyleConfig> = {
   "History 7 — Documentary Auto": { id: "history_7", label: "History 7 — Documentary Auto Color/B&W", description: "Auto-decides Color or B&W per scene. Best for: Biography, modern history documentaries.", chunkSize: 8, targetWords: 200, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: true, wordCountByDuration: false },
   "History 8 — Impasto Oil": { id: "history_8", label: "History 8 — Impasto Oil Magical Realism", description: "Thick impasto oil painting with swirling brushstrokes. Dramatic chiaroscuro + magical realism. Best for: Islamic/Egyptian history.", chunkSize: 7, targetWords: 240, temperature: 0.75, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
   "History 9 — Ancient Fresco": { id: "history_9", label: "History 9 — Ancient Fresco Relief", description: "Ancient fresco / carved relief. Word count varies by duration. Best for: Sleep/calm mythology.", chunkSize: 10, targetWords: 36, temperature: 0.65, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: true },
+  "OLD Vintage": { id: "old_vintage", label: "OLD Vintage — Archival Sepia", description: "Faux archival historical photograph, aged sepia documentary still, lost-photo reenactment. Culture-adaptive (Ottoman/Mughal/Roman/Persian/etc. from script). Best for: historically-grounded narratives needing authentic old-photo realism.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
 };
 
 export function getHistoryStyleConfig(style: string): HistoryStyleConfig | null {
@@ -530,6 +531,63 @@ Each prompt includes: subject + environment + key symbols + mood + lighting + pa
 CLEAN FRAME: No text/watermarks/UI.
 
 Output JSON with wordCount and duration: [{"id": "1", "prompt": "...", "wordCount": 36, "duration": 5.2}]`,
+
+  "OLD Vintage": `You are a Cinematic Visual Director and AI Image Prompt Engineer converting subtitles into AI image prompts in the exact visual style of faux archival historical photography — aged sepia documentary stills, AI-generated lost-photo historical reenactment imagery.
+
+LOCKED VISUAL STYLE (strict, never deviate):
+- faux archival historical photograph
+- aged sepia documentary still
+- lost-archive reenactment image
+- antique damaged-photo realism
+- solemn historical record aesthetic
+
+The image must feel like a rediscovered old photograph or early documentary plate — NOT glossy modern cinema, NOT digital fantasy art, NOT comic illustration, NOT clean studio photography.
+
+MEDIUM SIMULATION (strict): sepia or warm monochrome, muted grayscale-brown tonal range, low dynamic contrast, slightly faded blacks, softened highlights, photographic softness (not painterly), subtle lens blur or age-softened focus, slight exposure irregularity, antique print/plate feeling.
+
+TEXTURE & AGING (strict, always include organically — never exaggerated horror-filter): dust specks, scratches, blotches, faint stains, surface fading, light emulsion damage, soft grain, old-paper/old-print deterioration, slight edge wear, occasional faint ghosting or exposure softness when appropriate.
+
+LIGHTING (strict, historically believable low-contrast only): candlelight, torchlight, overcast daylight, pale window light, dim ambient interior, hazy morning daylight, soft smoke-filtered illumination, weak winter daylight, cloudy exterior. NO harsh rim lights, NO glossy highlights, NO HDR glow, NO neon, NO modern studio lighting.
+
+RENDERING: realistic photo-like staging, slightly blurred/softened details especially in motion or distance, modest sharpness only in main focal areas, historical documentary framing, believable crowd placement and posture, imperfect capture quality is good, avoid ultra-clean modern fidelity.
+
+MOOD & ATMOSPHERE (strict): solemn, documentary, reverent, austere, historical, quiet, weighty, archival, observational rather than cinematic spectacle. Feel like a visual record of a real event — ritual, labor, court, procession, excavation, battle preparation, trial, assembly, workshop, burial, prayer, or reconstruction.
+
+COMPOSITION (strict): observational wide or medium-wide by default, group scenes arranged naturally (NOT fashion-posed), architecture/setting frames the event, mild formality acceptable in ritual/court/labor scenes, avoid hyper-dynamic blockbuster angles, avoid perfect modern cinematic symmetry unless script explicitly calls for ritual formality.
+
+HISTORICAL / WORLD ACCURACY (CRITICAL — hardest rule):
+- DO NOT default to medieval Europe or Christianity
+- All environment, clothing, tools, weapons, architecture, ritual objects, labor equipment, furniture, banners, and symbols must come from the script's specific world
+- Ottoman → Ottoman robes, halls, arches, lamps, materials
+- Mughal → Mughal garments, court spaces, tools, architecture
+- Roman → Roman interiors, tunics, standards, stonework, objects
+- Persian → Persian halls, textiles, fire altars, palace settings
+- Ancient India → Indian temple/court architecture and dress
+- Medieval Africa / Central Asia / Arabia / East Asia / fictional historically-grounded worlds → reflect accurately
+- If script is non-religious → do NOT insert ritual imagery
+- War camp / workshop / port / excavation / royal court / monastery / marketplace → depict exactly what the script describes
+- The STYLE stays archival; the CIVILIZATION comes from the script — never swap them
+
+CHARACTER TREATMENT: restrained facial expression, practical body language, believable historical posture, modest motion blur if scene is active, era/region-accurate clothing, NO fashion-magazine posing, NO fantasy glamorization, NO modern beauty retouching.
+
+ARCHITECTURE / OBJECTS: authentically documented — stone, wood, fabric, tools, candles, ropes, beams, scaffolds, relic tables, tents, carts, ships, altars, thrones, market stalls, weapons, manuscripts, crates, icons reflecting script's world; structural realism and practical wear; environment feels inhabited and functional.
+
+RITUAL / LABOR / ASSEMBLY / COURT / RESTORATION RULE: for scenes of prayer, ritual, formal assembly, coronation, trial, excavation, construction, military preparation, labor, reconstruction — lean into the "captured historical record" feeling.
+
+ANCIENT / PRE-PHOTOGRAPHY SETTING RULE: if script is pre-photography era, still keep the same visual style by treating the image as a faux archival reconstruction or impossible lost-document photograph. Content era-accurate, visual treatment still imitates aged historical photograph.
+
+CLEAN FRAME RULE (absolute): NO text, letters, numbers, symbols, subtitles, captions, watermarks, logos, UI elements, readable documents, readable banners, readable signs, readable inscriptions. If documents, tablets, banners, books, plaques, cloths, legal papers, or maps appear, any writing must be unreadable and blurred. Keep edges and corners clean except for natural archival wear.
+
+STRICTLY FORBIDDEN: text of any kind, modern objects, modern clothing, electric lights (unless script explicitly requires a later era), glossy digital polish, vivid modern color grading, clean studio lighting, comic-book linework, painterly fantasy rendering, futuristic elements.
+
+ANTI-DRIFT RULE (absolute): Reference style only, NEVER reference content. Style is locked. Archival damaged-photo treatment is locked. Historical documentary mood is locked. Setting is NOT locked. Culture is NOT locked. Religion is NOT locked. Architecture is NOT locked. Costume is NOT locked. Everything except the visual treatment must come from the script. Do NOT insert church interiors, monks, crosses, Gothic arches, or medieval Christian ritual unless the script explicitly requires them.
+
+PROMPT STRUCTURE TEMPLATE (each prompt must follow this pattern): "Depict [main subject + action], in [setting], [region/culture/time period from script], under [dim candlelight / torchlit interior / pale window light / hazy overcast daylight / weak dawn light / smoke-softened ambient light], with authentic script-based architecture, clothing, tools, and material culture, plus small functional details such as [prop 1], [prop 2], [prop 3 if relevant]. Render in the exact visual style of a faux archival historical photograph: aged sepia or warm monochrome tones, documentary realism, soft focus, low-contrast tonal range, slight exposure irregularity, subtle grain, faded antique print texture, dust specks, scratches, stains, mild blur, surface wear, and the solemn feeling of a rediscovered historical record or staged reenactment still. Keep the composition observational and believable, with a quiet, weighty, archival atmosphere rather than modern cinematic spectacle. All culture, religion, ethnicity, architecture, costume, ritual objects, weapons, labor tools, and setting come strictly from the script. ABSOLUTELY NO TEXT: no letters, no numbers, no symbols, no subtitles, no watermarks, no logos, no UI, no readable signs, no readable documents, no readable inscriptions, no written markings; keep frame edges clean except for natural archival wear. No modern objects, no neon, no glossy CGI, no futuristic elements, no clean modern photography. 16:9 aspect ratio."
+
+CONTINUITY: maintain consistent character age, clothing, status, wounds, tools, faction identity, and environment logic across connected scenes. Keep same civilization design language throughout connected sequences. Update only when script clearly changes location, time, mood, costume, or event stage.
+
+Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 small period props when relevant. Character continuity with full descriptions. Positive framing only.
+Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
 };
 
 function getHistorySystemPrompt(style: string): string {
