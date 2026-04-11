@@ -586,14 +586,172 @@ PROMPT STRUCTURE TEMPLATE (each prompt must follow this pattern): "Depict [main 
 
 CONTINUITY: maintain consistent character age, clothing, status, wounds, tools, faction identity, and environment logic across connected scenes. Keep same civilization design language throughout connected sequences. Update only when script clearly changes location, time, mood, costume, or event stage.
 
-Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 small period props when relevant. Character continuity with full descriptions. Positive framing only.
+Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 small period props when relevant. Character continuity with full descriptions.
 Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
+};
+
+// ============================================================
+// FINAL OVERRIDES — injected AFTER NANO_BANANA_RULES for styles
+// that need to lock things the shared rules would otherwise drift.
+//
+// Because NANO_BANANA_RULES is appended after each style's base
+// prompt, its "pick color grading per scene mood" and "emotional
+// lighting map → cold blue / cold teal / clinical silver" guidance
+// ends up overriding style-specific palette locks due to recency
+// bias in the LLM. A final-override block at the very end of the
+// full system prompt takes precedence and pins the rules we need.
+// ============================================================
+const HISTORY_STYLE_FINAL_OVERRIDES: Record<string, string> = {
+  "OLD Vintage": `
+══════════════════════════════════════════════════════════════
+OLD VINTAGE FINAL OVERRIDES — HIGHEST PRIORITY
+These rules OVERRIDE every earlier instruction they contradict,
+including the shared NANO BANANA color grading and emotional
+lighting rules.
+══════════════════════════════════════════════════════════════
+
+1. PALETTE IS LOCKED — NEVER SCENE-DEPENDENT.
+   OLD Vintage uses EXACTLY ONE palette for every single prompt,
+   regardless of subject, mood, era, or location: warm sepia,
+   aged warm monochrome, muted grayscale-brown, faded amber,
+   dusty tan, weathered parchment, soft ink-black shadows.
+
+   IGNORE any earlier instruction to "match color grading to
+   scene mood" or "pick color palette based on emotional
+   content". That guidance is OVERRIDDEN here.
+
+   BANNED color descriptors (never use, regardless of scene):
+   - cold blue, cool blue, icy blue, clinical blue
+   - cyan, bioluminescent, glowing cyan, eerie cyan
+   - cold teal, sterile teal, cosmic teal
+   - silver tones, sterile silver, clinical silver
+   - high-key white, sterile white, sharp clinical white
+   - neon, HDR glow, glossy, hyper-saturated, Technicolor
+   - vivid modern color, saturated modern grading
+   - radioactive glow as a color (mood can be eerie, but the
+     render is still sepia — a glowing liquid becomes a dark
+     liquid in a glass vial under dim warm light)
+   - ANY named external palette from other styles:
+     "Divine/Olympus palette", "Underworld/Dark palette",
+     "Sea/Water palette", "Earth/Mortal palette",
+     "Celestial palette", "color grading map", etc.
+     These belong to OTHER styles and have ZERO place in
+     OLD Vintage output. Never reference them by name.
+
+2. LIGHTING IS LOCKED — NEVER MOOD-DEPENDENT.
+   OLD Vintage lighting ALWAYS uses ONLY one of:
+   candlelight, torchlight, oil-lamp glow, overcast daylight,
+   pale window light, dim ambient interior, hazy morning
+   daylight, soft smoke-filtered illumination, weak winter
+   daylight, cloudy exterior.
+
+   IGNORE any earlier rule mapping emotional content to
+   specific lighting (e.g., "sadness → cold blue", "mystery
+   → cold teal", "fear → low-key harsh"). Those rules are
+   OVERRIDDEN. Emotional content in OLD Vintage is carried by
+   POSTURE, FACIAL EXPRESSION, COMPOSITION, and ARCHIVAL
+   DAMAGE — never by cool or modern lighting.
+
+   BANNED lighting descriptors (never use):
+   - "high-key" anything
+   - "sterile clinical lighting", "cold clinical blue light"
+   - "sharp clinical whites", "flash photography lighting"
+   - "1990s flash" or "press flash"
+   - "modern studio lighting", "rim lights", "spotlights"
+   - "fluorescent tube light" described as harsh or bright
+   - any bright, cold, or clinical modifier on an electric
+     source. A fluorescent tube becomes "dim pale overhead
+     ambient light" rendered in warm sepia.
+
+3. CLEAN FRAME — EXPLICIT NEGATIVE FRAMING REQUIRED.
+   End every prompt with this EXACT phrase (or a very close
+   variant using the same negative framing):
+
+   "ABSOLUTELY NO TEXT: no letters, no numbers, no symbols,
+   no watermarks, no logos, no readable documents, no
+   readable inscriptions; keep frame edges clean except for
+   natural archival wear. 16:9 aspect ratio."
+
+   IGNORE any earlier rule saying "describe what you want,
+   never what you don't want" or "positive framing only".
+   That guidance is OVERRIDDEN for OLD Vintage because the
+   image model needs explicit text suppression to reliably
+   omit writing.
+
+4. MODERN-ERA SCRIPTS — STILL ARCHIVAL, NEVER CINEMATIC.
+   If the script is set in the 1900s-2020s (1940s institution,
+   1950s lab, 1990s hearing, 2006 hospital, 2025 office, etc.),
+   the prompt MUST STILL render as a faux archival historical
+   photograph — NEVER as modern cinematography or period
+   film stock.
+
+   Correct approach: a 1994 Senate hearing should look like
+   a severely aged, damaged sepia photograph — as if a real
+   1994 press photo had been stored in a damp archive for
+   100 years and rediscovered. Dust specks, scratches, faded
+   blacks, low contrast, warm monochrome.
+
+   BANNED phrasing for modern-era scenes:
+   - "1990s film stock" → use "aged sepia archival print"
+   - "nostalgic 1990s film aesthetic" → use "archival
+     documentary aesthetic"
+   - "1950s color grading" → use "aged warm monochrome"
+   - "mid-century Technicolor" → use "faded sepia monochrome"
+   - "modern 35mm film stock" → use "aged photographic plate"
+   - any descriptor implying clean, glossy, color-graded
+     modern cinematography
+
+5. BANNED PROPS / LIGHT SOURCES — soft-rendered fallbacks.
+   When the script contains elements that would normally
+   break the archival feel, render them as quiet, warm,
+   sepia-compatible versions:
+
+   - radioactive / glowing fluid → a plain dark liquid in a
+     glass vial, lit only by dim smoke-softened daylight.
+     No cyan, no green glow, no "eerie luminescence".
+   - Geiger counter / electronic device → oxidized metal
+     casing, unlit dial, in dim warm ambient light.
+   - computer monitor / screen → dim amber glow falling
+     softly on a weathered face, never "high-key screen
+     glow" or "cold blue UI light".
+   - fluorescent tube / ceiling bulb → "dim pale overhead
+     ambient light" in sepia tones, never harsh cold white.
+
+6. PRE-EMIT CHECKLIST — internally verify before returning
+   any prompt in the JSON output:
+
+   □ Does the prompt use ONLY warm sepia / amber / aged
+     monochrome color descriptors?
+   □ Does the prompt use ONLY one of the allowed historical
+     lighting types (candle / torch / overcast / pale window
+     / dim ambient / oil lamp / smoke-softened)?
+   □ Does the prompt avoid EVERY banned phrase from Rules 1,
+     2, 4, and 5?
+   □ Does the prompt end with the explicit negative-framing
+     clean-frame phrase from Rule 3?
+   □ For modern-era scenes: is the scene described as aged
+     archival, never as modern cinematography or 1990s film
+     stock?
+   □ Does the prompt avoid any named palette ("Divine",
+     "Olympus", "Underworld", "Sea/Water", "Earth/Mortal",
+     "Celestial", "color grading map", etc.)?
+
+   If ANY check fails, REWRITE the prompt before emitting it.
+   Do NOT output a prompt that fails any check.
+
+These 6 rules are the FINAL, HIGHEST-PRIORITY instructions for
+OLD Vintage. They override any earlier guidance they contradict.
+`,
 };
 
 function getHistorySystemPrompt(style: string): string {
   const base = HISTORY_SYSTEM_PROMPTS[style] || '';
   // Inject shared Nano Banana optimization rules into all history styles
-  return base + '\n' + NANO_BANANA_RULES;
+  const withShared = base + '\n' + NANO_BANANA_RULES;
+  // Append any style-specific FINAL override AFTER the shared rules
+  // so it takes highest priority in the LLM's attention.
+  const finalOverride = HISTORY_STYLE_FINAL_OVERRIDES[style] || '';
+  return finalOverride ? withShared + '\n' + finalOverride : withShared;
 }
 
 function calculateHistoryMaxOutput(style: string, numSubtitles: number): number {
