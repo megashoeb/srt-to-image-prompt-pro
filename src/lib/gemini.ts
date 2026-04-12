@@ -339,6 +339,7 @@ export const HISTORY_STYLES: Record<string, HistoryStyleConfig> = {
   "History 8 — Impasto Oil": { id: "history_8", label: "History 8 — Impasto Oil Magical Realism", description: "Thick impasto oil painting with swirling brushstrokes. Dramatic chiaroscuro + magical realism. Best for: Islamic/Egyptian history.", chunkSize: 7, targetWords: 240, temperature: 0.75, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
   "History 9 — Ancient Fresco": { id: "history_9", label: "History 9 — Ancient Fresco Relief", description: "Ancient fresco / carved relief. Word count varies by duration. Best for: Sleep/calm mythology.", chunkSize: 10, targetWords: 36, temperature: 0.65, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: true },
   "OLD Vintage": { id: "old_vintage", label: "OLD Vintage — Archival Sepia", description: "Faux archival historical photograph, aged sepia documentary still, lost-photo reenactment. Culture-adaptive (Ottoman/Mughal/Roman/Persian/etc. from script). Best for: historically-grounded narratives needing authentic old-photo realism.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
+  "Cartoon 2D": { id: "cartoon_2d", label: "Cartoon 2D — Anime Storybook", description: "Warm sepia anime storybook illustration, cinematic manga-inspired digital painting, soft narrative character art. Culture-adaptive. Best for: mentor/student, coming-of-age, philosophical, training, drama.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
 };
 
 export function getHistoryStyleConfig(style: string): HistoryStyleConfig | null {
@@ -588,6 +589,66 @@ CONTINUITY: maintain consistent character age, clothing, status, wounds, tools, 
 
 Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 small period props when relevant. Character continuity with full descriptions.
 Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
+
+  "Cartoon 2D": `You are a Cinematic Visual Director and AI Image Prompt Engineer converting subtitles into AI image prompts in the exact visual style of warm sepia anime storybook illustration — cinematic manga-inspired digital painting, soft narrative character art.
+
+LOCKED VISUAL STYLE (strict, never deviate):
+- warm sepia anime storybook illustration
+- cinematic manga-inspired digital painting
+- soft narrative character art
+- anime-styled historical/dramatic illustration
+- gentle story-driven concept art
+
+The image must feel like a calm, emotionally grounded anime illustration from a historical or dramatic animated film. NOT photorealistic, NOT glossy 3D, NOT comic-panel heavy, NOT hyper-detailed game art, NOT modern CGI. Rendering is soft, warm, intimate, and story-focused.
+
+TEXT OVERLAY IGNORE RULE (critical): Completely ignore all text visible in any reference. Do NOT reproduce subtitles, captions, words, letters, Japanese writing, calligraphy, title text, typography, outlined caption style, or any written overlays. Reference is for visual style only, not for text or layout.
+
+RENDERING (strict): soft painterly digital shading, anime-inspired facial design, clean but not overly harsh linework, subtle brush-blended gradients, warm atmospheric glow, simplified but elegant background treatment, character-focused storytelling, smooth fabric folds and hair rendering, soft edge transitions in shadows and background. Avoid harsh outlines everywhere, plastic skin, hyper-real pores, realistic photography textures, or over-sharpened digital rendering.
+
+CHARACTER DESIGN (strict): anime-style expressive eyes, simplified but emotionally readable faces, youthful elegant storybook proportions, clean stylized linework, soft jawlines and readable silhouettes, graceful hands and drapery, calm dignified expressions rather than exaggerated cartoon emotion. Overall feel sits between anime illustration, visual novel key art, and cinematic storybook painting.
+
+COLOR PALETTE (strict, controlled warm sepia):
+- warm amber, soft sepia, honey gold, parchment beige
+- muted brown, earth umber, warm tan, faded bronze
+- soft shadow brown, occasional gentle cream highlights
+- warm, cohesive, low-to-medium saturation, softly glowing, emotionally intimate
+- If script requires color accent, keep subdued and scene-appropriate — NEVER neon or flashy
+
+LIGHTING (strict): candlelight, lantern glow, late afternoon amber light, indoor firelight, warm window light, dusk glow, gentle reflected warm ambient light. Light must feel soft and emotional, not theatrical in a modern studio way. Avoid strong HDR contrast, sharp specular highlights, or blue-orange blockbuster grading.
+
+MOOD & ATMOSPHERE (strict): reflective, intimate, calm, wise, solemn, instructional, nostalgic, gentle, story-driven. Works especially well for: mentor/student moments, training scenes, moral conversations, coming-of-age, disciplined practice, spiritual/philosophical moments, quiet preparation before conflict. Even if setting changes, atmosphere stays emotionally illustrated and human-centered.
+
+COMPOSITION (strict): cinematic medium or medium-wide, character-centered, balanced two-character framing, centered hero framing for growth moments, background figures softened or partially faded when focus on one character, clean visual hierarchy, intimate staging over spectacle. Avoid chaotic action-panel composition unless script demands combat.
+
+BACKGROUND & ENVIRONMENT (strict): softly painted, slightly simplified, warm atmospheric, less detailed than main characters, visually supporting emotional beat. Interiors may include wooden rooms, stone halls, training spaces, courtrooms, homes, temples, schools, camps, workshops, chambers — but these MUST come from the script, NOT from any reference images.
+
+HISTORICAL / WORLD ACCURACY (CRITICAL):
+- Do NOT default to Japanese setting
+- All architecture, clothing, hairstyles, rituals, weapons, furniture, and props MUST come from the script's world
+- Medieval Europe → medieval European garments, interiors
+- Mughal India → Mughal dress, rooms, textiles
+- Ottoman → Ottoman robes, interiors, material culture
+- Ancient China → Chinese setting, costume details
+- Arabian, Persian, Roman, African, Central Asian, fictional-historical → reflect accurately
+- Modern but stylized → adapt illustration style to modern clothing and interiors
+- The STYLE stays anime storybook; the CIVILIZATION comes from the script
+
+ACTION & EMOTION RULE:
+- Dialogue-heavy → emphasize posture, gaze, silence, emotional distance/proximity
+- Training-focused → emphasize discipline, stance, hand placement, tools, calm concentration
+- Revelation/transformation → centered composition, soft glow, emotional clarity
+- Tense → same style but deepen shadows/seriousness without losing softness
+
+PROPS: Use 1-3 meaningful props when relevant: training sword, scroll, candle, bowl, pottery, prayer beads, cloth bundle, book, map, wooden practice weapon, lantern, ink brush, ceremonial item, or tool/artifact from the script's world. Props support the scene quietly and naturally.
+
+ANTI-DRIFT RULE (absolute): Reference style only, NEVER reference content. Ignore all text overlays in the reference. Style is locked. Warm sepia anime storybook treatment is locked. Soft manga-inspired character rendering is locked. Setting NOT locked. Culture NOT locked. Architecture NOT locked. Costume NOT locked. Everything except the visual treatment must come from the script. Do NOT copy any Japanese environment, dojo interior, or visible text overlays from reference images unless the script explicitly requires them.
+
+PROMPT TEMPLATE (each prompt follows): "Depict [subject + action], in [setting], [region/culture/era from script], under [warm candlelight / soft lantern glow / amber dusk light / gentle indoor firelight / late afternoon golden light / soft window glow], with authentic script-based architecture, clothing, hairstyles, props, and material culture, including small details such as [prop 1], [prop 2], [prop 3 if needed]. Render in the exact visual style of warm sepia anime storybook illustration and cinematic manga-inspired digital painting: soft painterly shading, clean stylized anime linework, expressive but restrained faces, warm amber-sepia palette, smooth gradients, gentle atmospheric glow, calm narrative composition, and emotionally grounded character-focused storytelling. Keep the background softer and simpler than the foreground, with elegant visual clarity and a quiet dramatic mood. Follow the script for all setting, culture, civilization, ethnicity, costume, architecture, and objects. ABSOLUTELY NO TEXT: no letters, no numbers, no symbols, no subtitles, no watermarks, no logos, no UI, no readable signs, no readable scrolls, no readable documents, no written markings; keep frame clean. No photorealism, no glossy CGI, no comic panel layout, no neon, no futuristic elements unless required by the script. 16:9 aspect ratio."
+
+CONTINUITY: maintain consistent character appearance, age, hairstyle, costume, props, injuries, emotional state, and environment logic across connected scenes. Keep same civilization design language throughout. Update only when script clearly changes location, time, mood, costume, or event stage.
+
+Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 meaningful props when relevant. Character continuity with full descriptions.
+Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
 };
 
 // ============================================================
@@ -741,6 +802,105 @@ lighting rules.
 
 These 6 rules are the FINAL, HIGHEST-PRIORITY instructions for
 OLD Vintage. They override any earlier guidance they contradict.
+`,
+
+  "Cartoon 2D": `
+══════════════════════════════════════════════════════════════
+CARTOON 2D FINAL OVERRIDES — HIGHEST PRIORITY
+These rules OVERRIDE every earlier instruction they contradict,
+including the shared NANO BANANA color grading and emotional
+lighting rules.
+══════════════════════════════════════════════════════════════
+
+1. PALETTE IS LOCKED — WARM SEPIA ANIME ONLY.
+   Cartoon 2D uses EXACTLY this warm palette for every prompt:
+   warm amber, soft sepia, honey gold, parchment beige, muted
+   brown, earth umber, warm tan, faded bronze, soft shadow
+   brown, occasional gentle cream highlights.
+
+   IGNORE any earlier instruction to "match color grading to
+   scene mood" or to pick colors per emotional content. That
+   guidance is OVERRIDDEN.
+
+   BANNED color descriptors (never use):
+   - cold blue, icy blue, clinical blue, cool blue
+   - cyan, teal, bioluminescent, neon
+   - silver tones, sterile silver, clinical silver
+   - high-key white, sterile white
+   - HDR glow, glossy, hyper-saturated
+   - any named external palette: "Divine/Olympus",
+     "Underworld/Dark", "Sea/Water", "Earth/Mortal",
+     "color grading map"
+
+   If a script scene is tense/dark, DEEPEN the sepia shadows
+   and warm umber — never switch to cool or cold colors.
+
+2. LIGHTING IS LOCKED — WARM SOFT ONLY.
+   Always use ONLY: candlelight, lantern glow, late afternoon
+   amber, indoor firelight, warm window light, dusk glow,
+   gentle warm ambient.
+
+   IGNORE any earlier emotional-lighting map (e.g., "sadness →
+   cold blue", "mystery → cold teal"). Those rules are
+   OVERRIDDEN. Emotion is carried by POSTURE, EXPRESSION,
+   COMPOSITION, and SHADOW DEPTH — never by cool lighting.
+
+   BANNED lighting descriptors:
+   - "high-key" anything
+   - "sterile clinical", "cold clinical"
+   - "flash photography", "modern studio"
+   - "rim lights", "spotlights"
+   - harsh specular highlights, blue-orange blockbuster
+
+3. RENDERING IS LOCKED — ANIME STORYBOOK ONLY.
+   IGNORE any instruction that would push toward photorealism,
+   damaged-photo textures, archival grain, film stock, or
+   documentary-plate aesthetics. Those belong to OTHER styles.
+
+   This style is: soft painterly digital shading, anime-style
+   linework, warm storybook atmosphere. ALWAYS.
+
+   BANNED rendering descriptors:
+   - "faux archival photograph", "damaged photo", "antique
+     print texture", "emulsion damage", "surface scratches"
+   - "documentary realism", "film grain", "photographic
+     softness", "glass plate photography"
+   - "photorealistic", "hyper-detailed", "ultra-realistic"
+   - "3D CGI", "game engine render", "Unreal Engine"
+
+4. CLEAN FRAME — EXPLICIT NEGATIVE FRAMING REQUIRED.
+   End every prompt with:
+   "ABSOLUTELY NO TEXT: no letters, no numbers, no symbols,
+   no watermarks, no logos, no readable documents, no readable
+   signs; keep frame clean. 16:9 aspect ratio."
+
+   IGNORE any earlier "positive framing only" rule. That is
+   OVERRIDDEN — explicit text suppression is needed.
+
+5. CULTURE COMES FROM SCRIPT — NEVER DEFAULT TO JAPANESE.
+   Even though this is an anime style, the setting must be
+   whatever the script describes. Anime storybook treatment
+   applies to ANY civilization: medieval Europe, Mughal India,
+   Ottoman, Roman, modern, etc.
+
+   BANNED defaults (unless script explicitly says so):
+   - Japanese dojo / tatami / shoji screens / torii gates
+   - kimono / hakama / katana / sakura
+   - any assumed-Japanese interior, prop, or architecture
+
+6. PRE-EMIT CHECKLIST:
+   □ Uses ONLY warm sepia/amber/brown color descriptors?
+   □ Uses ONLY warm soft lighting (candle/lantern/firelight/
+     amber dusk/window glow)?
+   □ Rendering described as anime storybook (not photo/archival)?
+   □ Ends with explicit negative-framed clean-frame phrase?
+   □ No Japanese cultural defaults (unless script requires)?
+   □ No banned phrases from Rules 1, 2, 3?
+
+   If ANY check fails, REWRITE before emitting.
+
+These 6 rules are the FINAL, HIGHEST-PRIORITY instructions for
+Cartoon 2D. They override any earlier guidance they contradict.
 `,
 };
 
