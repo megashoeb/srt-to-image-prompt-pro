@@ -338,7 +338,7 @@ export const HISTORY_STYLES: Record<string, HistoryStyleConfig> = {
   "History 7 — Documentary Auto": { id: "history_7", label: "History 7 — Documentary Auto Color/B&W", description: "Auto-decides Color or B&W per scene. Best for: Biography, modern history documentaries.", chunkSize: 8, targetWords: 200, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: true, wordCountByDuration: false },
   "History 8 — Impasto Oil": { id: "history_8", label: "History 8 — Impasto Oil Magical Realism", description: "Thick impasto oil painting with swirling brushstrokes. Dramatic chiaroscuro + magical realism. Best for: Islamic/Egyptian history.", chunkSize: 7, targetWords: 240, temperature: 0.75, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
   "History 9 — Ancient Fresco": { id: "history_9", label: "History 9 — Ancient Fresco Relief", description: "Ancient fresco / carved relief. Word count varies by duration. Best for: Sleep/calm mythology.", chunkSize: 10, targetWords: 36, temperature: 0.65, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: true },
-  "OLD Vintage": { id: "old_vintage", label: "OLD Vintage — Archival Sepia", description: "Faux archival historical photograph, aged sepia documentary still, lost-photo reenactment. Culture-adaptive (Ottoman/Mughal/Roman/Persian/etc. from script). Best for: historically-grounded narratives needing authentic old-photo realism.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
+  "OLD Vintage": { id: "old_vintage", label: "OLD Vintage — Archival Sepia", description: "Faux archival historical photograph, aged sepia documentary still, lost-photo reenactment. Culture-adaptive (Ottoman/Mughal/Roman/Persian/etc. from script). Faces softly blurred in natural archival-photo manner — antique lens softness, not modern censorship. Best for: historically-grounded narratives needing authentic old-photo realism.", chunkSize: 7, targetWords: 250, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
   "Cartoon 2D": { id: "cartoon_2d", label: "Cartoon 2D — Anime Storybook", description: "Warm sepia anime storybook illustration, cinematic manga-inspired digital painting, soft narrative character art. Culture-adaptive. Best for: mentor/student, coming-of-age, philosophical, training, drama.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
 };
 
@@ -544,13 +544,13 @@ LOCKED VISUAL STYLE (strict, never deviate):
 
 The image must feel like a rediscovered old photograph or early documentary plate — NOT glossy modern cinema, NOT digital fantasy art, NOT comic illustration, NOT clean studio photography.
 
-MEDIUM SIMULATION (strict): sepia or warm monochrome, muted grayscale-brown tonal range, low dynamic contrast, slightly faded blacks, softened highlights, photographic softness (not painterly), subtle lens blur or age-softened focus, slight exposure irregularity, antique print/plate feeling.
+MEDIUM SIMULATION (strict): sepia or warm monochrome, muted grayscale-brown tonal range, low dynamic contrast, slightly faded blacks, softened highlights, photographic softness (not painterly), subtle lens blur or age-softened focus, slight exposure irregularity, antique print/plate feeling, softened facial definition consistent with antique lens softness and archival deterioration.
 
 TEXTURE & AGING (strict, always include organically — never exaggerated horror-filter): dust specks, scratches, blotches, faint stains, surface fading, light emulsion damage, soft grain, old-paper/old-print deterioration, slight edge wear, occasional faint ghosting or exposure softness when appropriate.
 
 LIGHTING (strict, historically believable low-contrast only): candlelight, torchlight, overcast daylight, pale window light, dim ambient interior, hazy morning daylight, soft smoke-filtered illumination, weak winter daylight, cloudy exterior. NO harsh rim lights, NO glossy highlights, NO HDR glow, NO neon, NO modern studio lighting.
 
-RENDERING: realistic photo-like staging, slightly blurred/softened details especially in motion or distance, modest sharpness only in main focal areas, historical documentary framing, believable crowd placement and posture, imperfect capture quality is good, avoid ultra-clean modern fidelity.
+RENDERING: realistic photo-like staging, slightly blurred/softened details especially in motion or distance, modest sharpness only in main focal areas, historical documentary framing, believable crowd placement and posture, imperfect capture quality is good, avoid ultra-clean modern fidelity. Faces should remain slightly out of focus or low-detail, especially in medium and wide shots.
 
 MOOD & ATMOSPHERE (strict): solemn, documentary, reverent, austere, historical, quiet, weighty, archival, observational rather than cinematic spectacle. Feel like a visual record of a real event — ritual, labor, court, procession, excavation, battle preparation, trial, assembly, workshop, burial, prayer, or reconstruction.
 
@@ -569,7 +569,16 @@ HISTORICAL / WORLD ACCURACY (CRITICAL — hardest rule):
 - War camp / workshop / port / excavation / royal court / monastery / marketplace → depict exactly what the script describes
 - The STYLE stays archival; the CIVILIZATION comes from the script — never swap them
 
-CHARACTER TREATMENT: restrained facial expression, practical body language, believable historical posture, modest motion blur if scene is active, era/region-accurate clothing, NO fashion-magazine posing, NO fantasy glamorization, NO modern beauty retouching.
+CHARACTER TREATMENT: restrained facial expression, practical body language, believable historical posture, modest motion blur if scene is active, era/region-accurate clothing, NO fashion-magazine posing, NO fantasy glamorization, NO modern beauty retouching. Faces softly blurred or age-softened with limited facial detail, as if captured through antique optics or preserved in a deteriorated archival print — NO sharply detailed modern facial rendering.
+
+FACE BLUR / FACIAL SOFTNESS RULE (strict — core pillar of the style):
+- All visible human faces MUST appear softly blurred, indistinct, or age-softened in the manner of an old archival photograph
+- Facial features should NOT be sharply readable; eyes, nose, and mouth may remain loosely visible but never crisp or highly detailed
+- The blur must feel OPTICAL, ATMOSPHERIC, MOTION-SOFTENED, or caused by antique lens/focus limitations and print aging
+- NEVER modern censorship blur, mosaic blur, pixelation, or digital anonymization
+- Keep the face treatment organic, subtle, and consistent with the overall aged-photo realism
+- Even close-up shots of a face must remain softened and low-detail, consistent with a deteriorated archival portrait print
+- NO sharp eyes, NO piercing gaze, NO crisp facial features, NO modern portrait clarity, NO photorealistic skin texture, NO high-detail face
 
 ARCHITECTURE / OBJECTS: authentically documented — stone, wood, fabric, tools, candles, ropes, beams, scaffolds, relic tables, tents, carts, ships, altars, thrones, market stalls, weapons, manuscripts, crates, icons reflecting script's world; structural realism and practical wear; environment feels inhabited and functional.
 
@@ -579,15 +588,15 @@ ANCIENT / PRE-PHOTOGRAPHY SETTING RULE: if script is pre-photography era, still 
 
 CLEAN FRAME RULE (absolute): NO text, letters, numbers, symbols, subtitles, captions, watermarks, logos, UI elements, readable documents, readable banners, readable signs, readable inscriptions. If documents, tablets, banners, books, plaques, cloths, legal papers, or maps appear, any writing must be unreadable and blurred. Keep edges and corners clean except for natural archival wear.
 
-STRICTLY FORBIDDEN: text of any kind, modern objects, modern clothing, electric lights (unless script explicitly requires a later era), glossy digital polish, vivid modern color grading, clean studio lighting, comic-book linework, painterly fantasy rendering, futuristic elements.
+STRICTLY FORBIDDEN: text of any kind, modern objects, modern clothing, electric lights (unless script explicitly requires a later era), glossy digital polish, vivid modern color grading, clean studio lighting, comic-book linework, painterly fantasy rendering, futuristic elements, sharply rendered modern faces, photorealistic portrait clarity.
 
 ANTI-DRIFT RULE (absolute): Reference style only, NEVER reference content. Style is locked. Archival damaged-photo treatment is locked. Historical documentary mood is locked. Setting is NOT locked. Culture is NOT locked. Religion is NOT locked. Architecture is NOT locked. Costume is NOT locked. Everything except the visual treatment must come from the script. Do NOT insert church interiors, monks, crosses, Gothic arches, or medieval Christian ritual unless the script explicitly requires them.
 
-PROMPT STRUCTURE TEMPLATE (each prompt must follow this pattern): "Depict [main subject + action], in [setting], [region/culture/time period from script], under [dim candlelight / torchlit interior / pale window light / hazy overcast daylight / weak dawn light / smoke-softened ambient light], with authentic script-based architecture, clothing, tools, and material culture, plus small functional details such as [prop 1], [prop 2], [prop 3 if relevant]. Render in the exact visual style of a faux archival historical photograph: aged sepia or warm monochrome tones, documentary realism, soft focus, low-contrast tonal range, slight exposure irregularity, subtle grain, faded antique print texture, dust specks, scratches, stains, mild blur, surface wear, and the solemn feeling of a rediscovered historical record or staged reenactment still. Keep the composition observational and believable, with a quiet, weighty, archival atmosphere rather than modern cinematic spectacle. All culture, religion, ethnicity, architecture, costume, ritual objects, weapons, labor tools, and setting come strictly from the script. ABSOLUTELY NO TEXT: no letters, no numbers, no symbols, no subtitles, no watermarks, no logos, no UI, no readable signs, no readable documents, no readable inscriptions, no written markings; keep frame edges clean except for natural archival wear. No modern objects, no neon, no glossy CGI, no futuristic elements, no clean modern photography. 16:9 aspect ratio."
+PROMPT STRUCTURE TEMPLATE (each prompt must follow this pattern): "Depict [main subject + action], in [setting], [region/culture/time period from script], under [dim candlelight / torchlit interior / pale window light / hazy overcast daylight / weak dawn light / smoke-softened ambient light], with authentic script-based architecture, clothing, tools, and material culture, plus small functional details such as [prop 1], [prop 2], [prop 3 if relevant]. Render in the exact visual style of a faux archival historical photograph: aged sepia or warm monochrome tones, documentary realism, soft focus, low-contrast tonal range, slight exposure irregularity, subtle grain, faded antique print texture, dust specks, scratches, stains, mild blur, surface wear, and the solemn feeling of a rediscovered historical record or staged reenactment still. All visible faces are softly blurred, indistinct, and low-detail in a natural old-photograph manner — as if caused by antique lens softness, slight motion, atmospheric haze, or print aging — never modern censorship, mosaic, or digital anonymization blur. Keep the composition observational and believable, with a quiet, weighty, archival atmosphere rather than modern cinematic spectacle. All culture, religion, ethnicity, architecture, costume, ritual objects, weapons, labor tools, and setting come strictly from the script. ABSOLUTELY NO TEXT: no letters, no numbers, no symbols, no subtitles, no watermarks, no logos, no UI, no readable signs, no readable documents, no readable inscriptions, no written markings; keep frame edges clean except for natural archival wear. No modern objects, no neon, no glossy CGI, no futuristic elements, no clean modern photography, no sharp modern facial rendering. 16:9 aspect ratio."
 
 CONTINUITY: maintain consistent character age, clothing, status, wounds, tools, faction identity, and environment logic across connected scenes. Keep same civilization design language throughout connected sequences. Update only when script clearly changes location, time, mood, costume, or event stage.
 
-Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 small period props when relevant. Character continuity with full descriptions.
+Every prompt: ONE flowing paragraph, 230-270 words. Include 1-3 small period props when relevant. Character continuity with full descriptions. Every prompt with visible human characters MUST include an explicit face-blur clause in natural-archival language (antique lens softness / motion / atmospheric haze / print aging), never censorship language.
 Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
 
   "Cartoon 2D": `You are a Cinematic Visual Director and AI Image Prompt Engineer converting subtitles into AI image prompts in the exact visual style of warm sepia anime storybook illustration — cinematic manga-inspired digital painting, soft narrative character art.
@@ -778,7 +787,49 @@ lighting rules.
    - fluorescent tube / ceiling bulb → "dim pale overhead
      ambient light" in sepia tones, never harsh cold white.
 
-6. PRE-EMIT CHECKLIST — internally verify before returning
+6. FACE BLUR IS MANDATORY — NATURAL ARCHIVAL SOFTNESS.
+   Every prompt that depicts one or more visible human faces
+   MUST include an explicit face-blur clause worded in
+   natural-archival language. The faces are softly blurred,
+   indistinct, low-detail, and age-softened — as if caused
+   by antique lens softness, slight subject motion,
+   atmospheric haze, or print aging.
+
+   Required phrasing (include this clause, or a very close
+   variant, in every prompt with visible characters):
+   "All visible faces are softly blurred, indistinct, and
+   low-detail in a natural old-photograph manner — as if
+   caused by antique lens softness, slight motion,
+   atmospheric haze, or print aging — never modern
+   censorship, mosaic, or digital anonymization blur."
+
+   The blur is ORGANIC photographic softness. It is NOT
+   censorship, NOT a mosaic, NOT pixelation, NOT digital
+   anonymization. This distinction MUST be explicit in the
+   prompt so the image model doesn't produce a censor-style
+   block. The words "censorship" and "mosaic" and "digital
+   anonymization" should appear only in the negative clause.
+
+   BANNED face descriptors (never use in OLD Vintage):
+   - "sharp facial features", "crisp eyes", "piercing gaze"
+   - "highly detailed face", "photorealistic face"
+   - "high-detail portrait", "modern portrait clarity"
+   - "sharply rendered face", "crisp facial detail"
+   - "detailed pores", "skin texture detail"
+   - "mosaic blur", "censor blur", "pixelated face",
+     "anonymization blur", "black bar" (these are forbidden
+     as the TYPE OF blur we want)
+
+   Close-up shots: even in an extreme close-up of a face,
+   the face remains SOFTENED and LOW-DETAIL, consistent
+   with a deteriorated archival portrait print. A face close-up
+   is NOT an invitation to render photorealistic modern clarity.
+
+   Medium & wide shots: faces are even softer — barely
+   resolvable features, loose eye/nose/mouth presence, no
+   sharp edges.
+
+7. PRE-EMIT CHECKLIST — internally verify before returning
    any prompt in the JSON output:
 
    □ Does the prompt use ONLY warm sepia / amber / aged
@@ -787,7 +838,7 @@ lighting rules.
      lighting types (candle / torch / overcast / pale window
      / dim ambient / oil lamp / smoke-softened)?
    □ Does the prompt avoid EVERY banned phrase from Rules 1,
-     2, 4, and 5?
+     2, 4, 5, and 6?
    □ Does the prompt end with the explicit negative-framing
      clean-frame phrase from Rule 3?
    □ For modern-era scenes: is the scene described as aged
@@ -796,11 +847,18 @@ lighting rules.
    □ Does the prompt avoid any named palette ("Divine",
      "Olympus", "Underworld", "Sea/Water", "Earth/Mortal",
      "Celestial", "color grading map", etc.)?
+   □ If visible human characters are present, does the
+     prompt include the explicit face-blur clause from
+     Rule 6, worded in natural-archival language (lens
+     softness / motion / haze / print aging), NOT in
+     censorship language?
+   □ Does the prompt avoid "sharp", "crisp", "piercing",
+     "highly detailed", or "photorealistic" face descriptors?
 
    If ANY check fails, REWRITE the prompt before emitting it.
    Do NOT output a prompt that fails any check.
 
-These 6 rules are the FINAL, HIGHEST-PRIORITY instructions for
+These 7 rules are the FINAL, HIGHEST-PRIORITY instructions for
 OLD Vintage. They override any earlier guidance they contradict.
 `,
 
