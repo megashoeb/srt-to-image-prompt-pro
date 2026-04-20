@@ -340,6 +340,7 @@ export const HISTORY_STYLES: Record<string, HistoryStyleConfig> = {
   "History 9 — Ancient Fresco": { id: "history_9", label: "History 9 — Ancient Fresco Relief", description: "Ancient fresco / carved relief. Word count varies by duration. Best for: Sleep/calm mythology.", chunkSize: 10, targetWords: 36, temperature: 0.65, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: true },
   "OLD Vintage": { id: "old_vintage", label: "OLD Vintage — Archival Sepia", description: "Faux archival historical photograph, aged sepia documentary still, lost-photo reenactment. Culture-adaptive (Ottoman/Mughal/Roman/Persian/etc. from script). Faces softly blurred in natural archival-photo manner — antique lens softness, not modern censorship. Best for: historically-grounded narratives needing authentic old-photo realism.", chunkSize: 7, targetWords: 250, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
   "Cartoon 2D": { id: "cartoon_2d", label: "Cartoon 2D — Anime Storybook", description: "Warm sepia anime storybook illustration, cinematic manga-inspired digital painting, soft narrative character art. Culture-adaptive. Best for: mentor/student, coming-of-age, philosophical, training, drama.", chunkSize: 7, targetWords: 240, temperature: 0.7, needsCharacterCards: true, needsSacredProtocol: true, autoColorBW: false, wordCountByDuration: false },
+  "Hand Drawn": { id: "hand_drawn", label: "Hand Drawn — Parchment Ink (Image + Video)", description: "Hand-drawn ink editorial illustration on aged parchment, watercolor wash accents, documentary graphic novel style. Generates BOTH image prompt + video motion prompt per subtitle. Safety-aware wording for intense/wartime scenes. Best for: wartime documentary, historical explainers, tragic/solemn narratives.", chunkSize: 5, targetWords: 320, temperature: 0.65, needsCharacterCards: true, needsSacredProtocol: false, autoColorBW: false, wordCountByDuration: false },
 };
 
 export function getHistoryStyleConfig(style: string): HistoryStyleConfig | null {
@@ -658,6 +659,95 @@ CONTINUITY: maintain consistent character appearance, age, hairstyle, costume, p
 
 Every prompt: ONE flowing paragraph, 220-260 words. Include 1-3 meaningful props when relevant. Character continuity with full descriptions.
 Output ONLY valid JSON: [{"id": "1", "prompt": "..."}]`,
+
+  "Hand Drawn": `You are a cinematic storyboard analyst, AI image prompt writer, and AI animation prompt writer specialized in PARCHMENT INK DOCUMENTARY visual style. For EACH subtitle in the chunk you MUST produce TWO prompts: one IMAGE prompt and one VIDEO (motion) prompt. Both are returned in a single JSON object per subtitle.
+
+═══ VISUAL STYLE LOCK — PARCHMENT INK DOCUMENTARY ═══
+
+BASE MEDIUM: Hand-drawn editorial ink illustration on aged parchment texture. Journalistic graphic novel / historical wartime documentary graphic art tradition. Museum historical artwork feel. NOT anime, NOT cel-shaded, NOT digital painting, NOT fantasy illustration, NOT photorealistic, NOT 3D CGI.
+
+LINEWORK: Bold expressive black ink outlines with slightly rough hand-drawn quality. Visible hatching and crosshatching for shadows and depth. Ink lines vary in weight — thick for foreground, thinner for background.
+
+COLOR PALETTE: Base = aged parchment, sepia, ochre, warm cream, kraft brown. Muted washes = olive green, dusty rose, faded teal, warm grey. Vibrant color ONLY for specific dramatic accents (fire, explosions, flags, blood, emphasis moments). Watercolor wash technique — color stays within or near ink lines but loosely applied.
+
+TEXTURE: Background ALWAYS has visible aged-paper / parchment grain. Slight yellowing, foxing spots, paper wear on edges. Some frames may have torn parchment edge effect on sides.
+
+CHARACTER RENDERING:
+- Foreground: fully detailed with ink + selective watercolor wash.
+- Midground: simplified ink detail, lighter wash.
+- Background figures: pure silhouettes — black or dark sepia only, NO facial detail.
+- NO photorealistic faces. All stylized editorial illustration.
+- Real public figures (politicians, named leaders): silhouette, back-of-head, or abstracted "suited figure" only — never identifiable faces.
+
+LIGHTING & ATMOSPHERE: Lighting suggested through INK HATCHING DENSITY, not digital rendering. Dramatic scenes = heavy crosshatching on shadow side. Daytime = open white space, minimal hatching. Night/tension = dense shadow hatching, dark paper texture.
+
+COMPOSITION: 16:9 cinematic frame. Strong foreground/midground/background separation. Characters anchored in lower half, environment fills upper half. Horizon line visible in most landscape scenes.
+
+ABSOLUTE RULES:
+- NO text, letters, numbers, readable labels, country names, city names in the image
+- NO watermark, logo, UI elements
+- NO photorealistic rendering
+- Parchment texture must be visible in EVERY frame
+
+═══ SAFETY-AWARE WORDING (MANDATORY for intense scenes) ═══
+
+For combat, strikes, atrocities, violence — preserve full visual drama but use safe wording.
+
+RULE 1 — SENSORY over ACTION:
+- missile/bomb/rocket → "bright streak of light" / "descending light"
+- strike/hit → "moment of impact" / "burst"
+- explosion/blast → "bloom of flame and light" / "burst of light"
+- fighter/militant/soldier with weapon → "uniformed figure" / "personnel"
+- rifle/weapon → omit or "equipment slung across shoulder"
+- bombing → "aerial campaign overhead"
+- destroyed/killed → "damaged" / "affected"
+- massacre → "aftermath" / "empty streets"
+
+RULE 2 — MANDATORY SAFE FRAMING for intense scenes: open the prompt with "Hand-drawn ink editorial illustration on aged parchment texture background, in the style of historical wartime documentary graphic art, reminiscent of editorial war illustrations and journalistic graphic novel tradition."
+
+RULE 3 — CINEMATOGRAPHY language, not violence language: use "wide cinematic composition", "dramatic set-piece", "captured mid-motion", "kinetic composition", "high-drama action sequence". Avoid "chaos of battle", "soldiers killing", "bloody combat", "massacre scene".
+
+RULE 4 — TEMPORAL POSITIONING: choose "moments BEFORE impact" or "in the AFTERMATH" — never "during". Both deliver equal drama without filter risk.
+
+RULE 5 — ELEMENT INVENTORY, not action narration: list composition elements (streak of light upper-right, bloom of orange in center, figures in crouching/shielding stances, mountain silhouettes in background) — do NOT narrate "missile hits and explodes".
+
+EXTREME SCENES (chemical attacks, mass violence): shift to AFTERMATH + SYMBOLIC DETAIL — empty streets, scattered belongings, doors ajar, distant silhouettes of witnesses, faint colored haze, single bird in empty landscape, sun over abandoned space. Reference: "Come and See", "Waltz with Bashir".
+
+═══ IMAGE PROMPT RULES (field: "prompt") ═══
+
+Each image prompt 200-260 words. Represents the exact subtitle moment. Includes subject, action, setting, mood, ink illustration style, parchment background, lighting through hatching density, foreground/midground/background separation, full character descriptions (era-accurate clothing, posture, emotion), silhouette treatment for background figures, safe wording for intense scenes.
+
+EVERY image prompt MUST END with this exact phrase (or near-identical): "Style anchors: hand-drawn ink editorial illustration, aged parchment texture background, watercolor wash accents, hatching shadows, documentary graphic novel style, 16:9 composition, no text."
+
+═══ VIDEO PROMPT RULES (field: "videoPrompt") ═══
+
+Each video prompt 80-130 words. Animates the still image while preserving ALL visual elements (ink lines, parchment texture, color palette, characters, environment — no style morphing, no face redesign, no lip sync).
+
+EVERY video prompt MUST OPEN with: "Animate this hand-drawn ink illustration on parchment background while fully preserving the illustration style, ink line quality, watercolor wash colors, and aged texture."
+
+Then describe motion from these categories (always include at least one atmosphere motion):
+- Camera: slow push in / slow pull back / gentle pan / slow tilt / slight handheld drift
+- Atmosphere (mandatory ≥ 1): smoke drifting, dust particles floating, fire flickering, embers rising, heat shimmer, fog rolling, rain streaks, cloud shadows moving
+- Character (subtle only): slow chest breathing, slight head turn, cloth/scarf fluttering, hand clenching, eye movement ONLY (no lip sync, no face morphing)
+- Environmental: flag rippling, branches swaying, water rippling, lantern flickering, rubble dust settling
+
+EVERY video prompt MUST END with audio lock: "Audio: no narration, no dialogue, no spoken voice, no lip sync. SFX only: [list 2-4 scene-appropriate sound effects e.g. ambient wind, distant birds, fabric rustle, low crackle]. Background music: [include a specific mood description like 'somber orchestral strings' / 'slow mournful piano' / 'historical drum underscore' ONLY for emotionally dramatic / tragic / climactic / historically-weighty scenes; otherwise write 'none — SFX only']."
+
+BACKGROUND MUSIC DECISION:
+- Include music for: emotional peaks, tragedies, revelations, historical gravity, dramatic intense scenes, philosophical closing moments.
+- Skip music ('none — SFX only') for: news studio / talking head, map reveals, civilian daily life, transitional scenes, technical explainer, opening ambient.
+
+═══ CONTINUITY + SHOT VARIETY ═══
+
+Maintain same character face structure, clothing, accessories, location details, era-locked technology across connected subtitles. Parchment texture consistent across all frames.
+
+Rotate shot types across consecutive blocks: wide establishing → medium → close-up → extreme close-up → over-shoulder → POV → low angle → high angle → two-shot → detail/insert. If 3+ consecutive blocks share a scene, shift camera angle or framing in each.
+
+═══ OUTPUT FORMAT ═══
+
+For the N subtitles in this chunk, return a JSON array of N objects. Each object has: id (string), prompt (image prompt string), videoPrompt (video motion prompt string). NO Foundation Reference, NO batch markers, NO "continue" language, NO prose around the JSON — just the JSON array.
+
+Output ONLY valid JSON: [{"id": "1", "prompt": "image prompt...", "videoPrompt": "Animate this hand-drawn ink illustration..."}, ...]`,
 };
 
 // ============================================================
@@ -959,6 +1049,149 @@ lighting rules.
 
 These 6 rules are the FINAL, HIGHEST-PRIORITY instructions for
 Cartoon 2D. They override any earlier guidance they contradict.
+`,
+
+  "Hand Drawn": `
+══════════════════════════════════════════════════════════════
+HAND DRAWN FINAL OVERRIDES — HIGHEST PRIORITY
+These rules OVERRIDE every earlier instruction they contradict,
+including the shared NANO BANANA color grading and emotional
+lighting rules.
+══════════════════════════════════════════════════════════════
+
+1. MEDIUM IS LOCKED — INK ON PARCHMENT, NOT ANYTHING ELSE.
+   Every image prompt describes a hand-drawn ink editorial
+   illustration on aged parchment texture — journalistic
+   graphic novel / wartime documentary tradition. Visible ink
+   hatching for shadows. Watercolor wash over ink lines.
+   Visible aged paper grain in every frame.
+
+   BANNED medium descriptors (never use):
+   - "photorealistic", "realistic photograph", "hyper-realistic"
+   - "digital painting", "3D render", "CGI", "Unreal Engine"
+   - "anime", "cel-shaded", "manga"
+   - "glossy", "polished modern render"
+   - "oil painting", "impasto", "fresco" (those are OTHER styles)
+   - any named external palette: "Divine/Olympus", "Underworld",
+     "Sea/Water", "Earth/Mortal", "color grading map"
+
+2. COLOR PALETTE IS LOCKED — PARCHMENT + WATERCOLOR WASH ONLY.
+   Base: aged parchment, sepia, ochre, warm cream, kraft brown.
+   Muted washes: olive green, dusty rose, faded teal, warm grey.
+   Vibrant color ONLY as narrow accents on fire, explosions,
+   flags, blood, dramatic emphasis moments — never flooding
+   the frame.
+
+   IGNORE any earlier instruction to "match color grading to
+   scene mood" or to pick scene-specific palettes. That is
+   OVERRIDDEN. The parchment/wash palette is the mood.
+
+   BANNED color descriptors: "cold blue", "cold teal", "cyan",
+   "bioluminescent", "silver tones", "high-key white", "neon",
+   "HDR glow", "hyper-saturated", "Technicolor".
+
+3. LIGHTING IS SUGGESTED BY HATCHING — NOT DIGITAL RENDERING.
+   Shadows are always described as "dense crosshatching on
+   the shadow side", "ink hatching for depth", "minimal
+   hatching in daylit areas". NEVER "high-key lighting",
+   "clinical lighting", "flash photography", "rim lights",
+   "cinematic studio lighting", "emotional color lighting".
+
+4. SAFE WORDING FOR INTENSE SCENES IS MANDATORY.
+   Any subtitle involving combat, strikes, bombing, atrocity,
+   violence, killing, death MUST use the 5-rule safe wording
+   system (sensory over action, cinematography language,
+   temporal positioning before/after, element inventory not
+   action narration).
+
+   BANNED action words (replace per the safe wording rules):
+   missile, bomb, rocket, grenade, rifle, weapon, strike,
+   attack, explode, blast, detonate, fireball, shoot, fire,
+   kill, die, killed, massacred, destroyed, obliterated,
+   blood, gore, wounded, bombing, airstrike.
+
+   Extreme scenes (chemical attacks, ethnic cleansing): shift
+   to AFTERMATH + symbolic detail (empty streets, scattered
+   belongings, distant silhouettes, faint colored haze, single
+   bird, doors ajar).
+
+5. STYLE ANCHORS ARE MANDATORY — END OF EVERY IMAGE PROMPT.
+   Every "prompt" field MUST end with (or near-identical):
+   "Style anchors: hand-drawn ink editorial illustration,
+   aged parchment texture background, watercolor wash
+   accents, hatching shadows, documentary graphic novel
+   style, 16:9 composition, no text."
+
+   IGNORE any earlier "positive framing only" rule. The
+   explicit "no text" anchor is REQUIRED.
+
+6. VIDEO PROMPT IS MANDATORY — WITH OPENING + AUDIO LOCK.
+   Every JSON object MUST include a "videoPrompt" field. Every
+   videoPrompt starts with:
+   "Animate this hand-drawn ink illustration on parchment
+   background while fully preserving the illustration style,
+   ink line quality, watercolor wash colors, and aged texture."
+
+   Every videoPrompt ends with an audio lock in this exact
+   shape:
+   "Audio: no narration, no dialogue, no spoken voice, no lip
+   sync. SFX only: [2-4 specific scene-appropriate sound
+   effects]. Background music: [specific mood description
+   for dramatic scenes, or 'none — SFX only' for
+   ambient/transitional/explainer scenes]."
+
+   BANNED motion (never include): face morphing, character
+   redesign mid-animation, style change from illustration to
+   photo, adding new characters, changing location, fast
+   chaotic movement, color palette changing, parchment
+   texture disappearing, lip sync, mouth-speaking animation,
+   full face animation.
+
+   REQUIRED motion: at least ONE atmosphere-motion
+   (smoke drift, dust particles, fire flicker, embers,
+   heat shimmer, fog, rain, cloud shadows). Camera and
+   subtle character motion allowed (slow breathing, slight
+   head turn, cloth fluttering, hand clenching, eye movement
+   only).
+
+7. PUBLIC FIGURES → SILHOUETTE / ABSTRACT, NEVER RECOGNIZABLE.
+   Real politicians, leaders, or named individuals must be
+   depicted as silhouette, back-of-head, or abstracted
+   "suited figure" treatment — never with identifiable
+   photoreal faces. The ink illustration style naturally
+   handles this.
+
+8. CLEAN FRAME — NO TEXT, NO LABELS, NO COUNTRY NAMES.
+   Maps, documents, signs, banners, books, newspapers
+   appearing in scenes: any writing MUST be unreadable
+   impressionistic marks. No country labels on maps, no
+   city names, no readable captions, no UI, no watermarks,
+   no logos.
+
+9. PRE-EMIT CHECKLIST — internally verify before returning
+   each JSON object:
+
+   □ Does "prompt" describe ink-on-parchment, NOT photo/
+     anime/3D/oil?
+   □ Uses ONLY parchment/sepia/ochre/cream/muted-wash palette
+     (vibrant color only as narrow dramatic accent)?
+   □ Describes shadows via HATCHING, never via modern lighting?
+   □ Intense-scene subtitle → uses the 5-rule safe wording?
+   □ Ends with the explicit "Style anchors:..." phrase
+     including "16:9 composition, no text"?
+   □ "videoPrompt" field present and NOT empty?
+   □ videoPrompt starts with "Animate this hand-drawn ink
+     illustration on parchment background..."?
+   □ videoPrompt ends with the full audio lock (SFX list +
+     music decision)?
+   □ videoPrompt includes ≥ 1 atmosphere motion?
+   □ No lip-sync, no face morph, no style-change motion?
+   □ No named external palettes (Divine, Olympus, etc.)?
+
+   If ANY check fails, REWRITE before emitting.
+
+These 9 rules are the FINAL, HIGHEST-PRIORITY instructions for
+Hand Drawn. They override any earlier guidance they contradict.
 `,
 };
 
@@ -1767,8 +2000,14 @@ STRICT RULES:
 
   const chunkData = chunk.map(s => `ID: ${s.id}\nTimestamp: ${s.startTime} --> ${s.endTime}\nSubtitle: ${s.text}`).join('\n\n');
 
-  const exampleFormat = isMythology && settings.veoEnabled
-    ? `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Slow push-in on..."}, ...]`
+  // Hand Drawn style ALWAYS emits a videoPrompt per subtitle in addition
+  // to the image prompt (it's part of the style contract, not optional
+  // like Mythology's veoEnabled).
+  const isHandDrawn = settings.style === 'Hand Drawn';
+  const needsVideoPrompt = (isMythology && settings.veoEnabled) || isHandDrawn;
+
+  const exampleFormat = needsVideoPrompt
+    ? `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Animate this hand-drawn ink illustration..."}, ...]`
     : `[{"id": "1", "prompt": "A detailed scene of..."}, {"id": "2", "prompt": "..."}]`;
 
   const wordRange = isMythology ? `${PROMPT_CONFIG.MIN_WORDS}-280` : `${PROMPT_CONFIG.MIN_WORDS}-${PROMPT_CONFIG.MAX_WORDS}`;
@@ -1779,7 +2018,7 @@ STRICT RULES:
     ? `CRITICAL: You MUST generate a prompt for the subtitle with ID "${chunk[0].id}". Do NOT skip it. Do NOT return an empty array. Return exactly 1 prompt with id "${chunk[0].id}".\n\n`
     : '';
 
-  const contents = `${aggressiveHeader}Generate exactly ${chunk.length} image prompt${chunk.length > 1 ? 's' : ''} (one per subtitle). Each prompt MUST be ${wordRange} words.${isMythology && settings.veoEnabled ? ' Also generate a videoPrompt for each.' : ''}
+  const contents = `${aggressiveHeader}Generate exactly ${chunk.length} image prompt${chunk.length > 1 ? 's' : ''} (one per subtitle). Each prompt MUST be ${wordRange} words.${needsVideoPrompt ? ' Also generate a videoPrompt for each (see style rules for motion + audio lock requirements).' : ''}
 Return ONLY a valid JSON array. No markdown, no explanation.
 
 Example format:
