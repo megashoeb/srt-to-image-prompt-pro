@@ -42,6 +42,7 @@ export default function App() {
     thinkingMode: false,
     sacredProtocol: false,
     veoEnabled: false,
+    handDrawnEngine: 'grok',
   });
   const [chunkSize, setChunkSize] = useState(5);
   const [autoChunk, setAutoChunk] = useState(true);
@@ -739,6 +740,45 @@ Napoleon watches grimly from his vantage point.`;
                       </p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Hand Drawn — Video Engine selector (visible only when Hand Drawn style selected) */}
+              {settings.style === 'Hand Drawn' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-zinc-300 flex items-center gap-1.5">
+                    <Video className="w-3.5 h-3.5 text-cyan-400" />
+                    Video Engine
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, handDrawnEngine: 'veo' })}
+                      className={cn(
+                        "px-3 py-2.5 rounded-md border text-sm font-medium transition-all",
+                        (settings.handDrawnEngine === 'veo')
+                          ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-200"
+                          : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
+                      )}>
+                      VEO
+                      <div className="text-[10px] font-normal text-zinc-500 mt-0.5">Cinematic · 80-130 w</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSettings({ ...settings, handDrawnEngine: 'grok' })}
+                      className={cn(
+                        "px-3 py-2.5 rounded-md border text-sm font-medium transition-all",
+                        (settings.handDrawnEngine === 'grok' || !settings.handDrawnEngine)
+                          ? "bg-cyan-500/15 border-cyan-500/50 text-cyan-200"
+                          : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
+                      )}>
+                      GROK
+                      <div className="text-[10px] font-normal text-zinc-500 mt-0.5">Grok Imagine · 30-40 w</div>
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-zinc-500 leading-relaxed pl-1">
+                    Both modes: SFX-only audio, no music, no narration. Image prompt format identical between modes — only the videoPrompt format differs.
+                  </p>
                 </div>
               )}
 

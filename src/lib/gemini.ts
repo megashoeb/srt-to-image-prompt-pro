@@ -721,21 +721,11 @@ EVERY image prompt MUST END with this exact phrase (or near-identical): "Style a
 
 ═══ VIDEO PROMPT RULES (field: "videoPrompt") ═══
 
-Each video prompt 80-130 words. Animates the still image while preserving ALL visual elements (ink lines, parchment texture, color palette, characters, environment — no style morphing, no face redesign, no lip sync).
+[VIDEO_ENGINE_BLOCK]
 
-EVERY video prompt MUST OPEN with: "Animate this hand-drawn ink illustration on parchment background while fully preserving the illustration style, ink line quality, watercolor wash colors, and aged texture."
+═══ AUDIO LOCK — APPLIES TO BOTH ENGINES ═══
 
-Then describe motion from these categories (always include at least one atmosphere motion):
-- Camera: slow push in / slow pull back / gentle pan / slow tilt / slight handheld drift
-- Atmosphere (mandatory ≥ 1): smoke drifting, dust particles floating, fire flickering, embers rising, heat shimmer, fog rolling, rain streaks, cloud shadows moving
-- Character (subtle only): slow chest breathing, slight head turn, cloth/scarf fluttering, hand clenching, eye movement ONLY (no lip sync, no face morphing)
-- Environmental: flag rippling, branches swaying, water rippling, lantern flickering, rubble dust settling
-
-EVERY video prompt MUST END with audio lock: "Audio: no narration, no dialogue, no spoken voice, no lip sync. SFX only: [list 2-4 scene-appropriate sound effects e.g. ambient wind, distant birds, fabric rustle, low crackle]. Background music: [include a specific mood description like 'somber orchestral strings' / 'slow mournful piano' / 'historical drum underscore' ONLY for emotionally dramatic / tragic / climactic / historically-weighty scenes; otherwise write 'none — SFX only']."
-
-BACKGROUND MUSIC DECISION:
-- Include music for: emotional peaks, tragedies, revelations, historical gravity, dramatic intense scenes, philosophical closing moments.
-- Skip music ('none — SFX only') for: news studio / talking head, map reveals, civilian daily life, transitional scenes, technical explainer, opening ambient.
+NO BACKGROUND MUSIC under any circumstances — every video prompt is SFX-only. NO narration, NO voiceover, NO dialogue, NO spoken word, NO lip sync, NO mouth movement. The audio lock phrase is mandatory at the end of every videoPrompt and must explicitly state "no music" along with "no narration / no dialogue / SFX only" — no music decision branching, no mood-music selection, no orchestral / piano / drum scoring suggestions. Just diegetic environmental SFX from the scene.
 
 ═══ CONTINUITY + SHOT VARIETY ═══
 
@@ -747,8 +737,59 @@ Rotate shot types across consecutive blocks: wide establishing → medium → cl
 
 For the N subtitles in this chunk, return a JSON array of N objects. Each object has: id (string), prompt (image prompt string), videoPrompt (video motion prompt string). NO Foundation Reference, NO batch markers, NO "continue" language, NO prose around the JSON — just the JSON array.
 
-Output ONLY valid JSON: [{"id": "1", "prompt": "image prompt...", "videoPrompt": "Animate this hand-drawn ink illustration..."}, ...]`,
+Output ONLY valid JSON: [{"id": "1", "prompt": "image prompt...", "videoPrompt": "..."}, ...]`,
 };
+
+// ============================================================
+// HAND DRAWN — ENGINE-SPECIFIC VIDEO BLOCKS
+//
+// Hand Drawn supports two video-prompt engines. The placeholder
+// [VIDEO_ENGINE_BLOCK] in HISTORY_SYSTEM_PROMPTS["Hand Drawn"]
+// is replaced with one of these two blocks based on
+// settings.handDrawnEngine ('veo' | 'grok'). Default: 'grok'.
+//
+// Both modes share: image rules, safety wording, audio lock
+// (NO music, NO narration, SFX only).
+//
+// Differences:
+//   VEO  — 80-130 word detailed cinematic motion prompts
+//   GROK — 30-40 word tight Grok Imagine optimized prompts
+// ============================================================
+
+const HAND_DRAWN_VEO_VIDEO_BLOCK = `Active video engine: VEO (cinematic detailed mode).
+
+Each video prompt 80-130 words. Animates the still image while preserving ALL visual elements (ink lines, parchment texture, color palette, characters, environment — no style morphing, no face redesign, no lip sync).
+
+EVERY video prompt MUST OPEN with: "Animate this hand-drawn ink illustration on parchment background while fully preserving the illustration style, ink line quality, watercolor wash colors, and aged texture."
+
+Then describe motion from these categories (always include at least one atmosphere motion):
+- Camera: slow push in / slow pull back / gentle pan / slow tilt / slight handheld drift
+- Atmosphere (mandatory ≥ 1): smoke drifting, dust particles floating, fire flickering, embers rising, heat shimmer, fog rolling, rain streaks, cloud shadows moving
+- Character (subtle only): slow chest breathing, slight head turn, cloth/scarf fluttering, hand clenching, eye movement ONLY (no lip sync, no face morphing)
+- Environmental: flag rippling, branches swaying, water rippling, lantern flickering, rubble dust settling
+
+EVERY VEO video prompt MUST END with audio lock: "Audio: no narration, no dialogue, no spoken voice, no lip sync, no music. SFX only: [list 2-4 scene-appropriate diegetic sound effects e.g. ambient wind, distant birds, fabric rustle, low crackle, footsteps on gravel]."
+
+NO background music in any case. NO mood music, NO orchestral/piano/drum scoring, NO music decision branching.`;
+
+const HAND_DRAWN_GROK_VIDEO_BLOCK = `Active video engine: GROK (Grok Imagine optimized — tight 30-40 word format).
+
+Each video prompt is EXACTLY 30-40 words total — keep it tight. Do NOT re-describe the scene (Grok already has the image). Only describe motion + sound + style preservation.
+
+REQUIRED STRUCTURE (one prompt = exactly these segments, in this order, separated by periods):
+[Camera motion in 5-8 words]. [Atmosphere/environmental motion in 5-8 words]. [Character or subject micro-motion in 5-8 words]. SFX only: [3-5 specific diegetic sounds, comma-separated]. No music, no narration, no dialogue. Preserve hand-drawn ink illustration on parchment, no style change.
+
+CAMERA MOTION OPTIONS (pick one, 5-8 words): slow push-in toward [subject], slow pull-out from [subject], slow pan across [subject], hold steady on [subject], slow tilt up over [subject], slight handheld drift around [subject]. NO whip pans, NO fast cuts, NO shake, NO dramatic dolly, NO drone-style sweeps.
+
+ATMOSPHERE MOTION OPTIONS (pick one, 5-8 words): dust particles drift in light shaft, smoke curls upward from [object], embers rise into dark sky, fabric flutters in slow wind, fog rolls across foreground, rain streaks fall diagonally, paper grain shimmers faintly, ink lines waver subtly.
+
+CHARACTER MICRO-MOTION OPTIONS (pick one, 5-8 words): subtle chest breathing of figure, slight head turn toward sound, slow blink of central character, hand tremor on weathered grip, fingers tighten around object, eyes shift slowly to side. NO lip sync, NO mouth movement, NO full facial animation, NO body morph.
+
+SFX OPTIONS (pick 3-5 diegetic, scene-specific): ambient mountain wind, low howling air, distant rotor thump, faint grit sliding on stone, soft controlled breath, fabric rustle, leather creak, radio static crackle, footsteps on gravel, distant traffic hum, water dripping, ember crackle, paper rustle, metal click, distant bird calls.
+
+CLOSING PHRASE (mandatory, exact wording — must end every Grok videoPrompt): "No music, no narration, no dialogue. Preserve hand-drawn ink illustration on parchment, no style change."
+
+NO music ever. NO mood music, NO orchestral, NO piano, NO drums. NO narrator, NO voiceover, NO dialogue, NO lip sync. SFX only.`;
 
 // ============================================================
 // FINAL OVERRIDES — injected AFTER NANO_BANANA_RULES for styles
@@ -1125,34 +1166,51 @@ lighting rules.
    IGNORE any earlier "positive framing only" rule. The
    explicit "no text" anchor is REQUIRED.
 
-6. VIDEO PROMPT IS MANDATORY — WITH OPENING + AUDIO LOCK.
-   Every JSON object MUST include a "videoPrompt" field. Every
-   videoPrompt starts with:
-   "Animate this hand-drawn ink illustration on parchment
-   background while fully preserving the illustration style,
-   ink line quality, watercolor wash colors, and aged texture."
+6. VIDEO PROMPT IS MANDATORY — TWO ENGINE MODES, ONE AUDIO LOCK.
+   Every JSON object MUST include a "videoPrompt" field. The
+   active engine ('veo' or 'grok') is specified in the system
+   prompt's VIDEO PROMPT RULES section above. Use ONLY the
+   format for the active engine.
 
-   Every videoPrompt ends with an audio lock in this exact
-   shape:
-   "Audio: no narration, no dialogue, no spoken voice, no lip
-   sync. SFX only: [2-4 specific scene-appropriate sound
-   effects]. Background music: [specific mood description
-   for dramatic scenes, or 'none — SFX only' for
-   ambient/transitional/explainer scenes]."
+   ABSOLUTELY NO BACKGROUND MUSIC IN EITHER MODE. NO mood
+   music, NO orchestral, NO piano, NO drums, NO scoring of
+   any kind. NO music decision branching, NO conditional
+   music selection. Every videoPrompt is SFX-only.
 
-   BANNED motion (never include): face morphing, character
+   ABSOLUTELY NO NARRATION, NO VOICEOVER, NO DIALOGUE, NO
+   spoken word, NO lip sync, NO mouth movement, NO full face
+   animation. Audio is purely diegetic environmental SFX.
+
+   VEO mode (when active): videoPrompt 80-130 words, opens
+   with "Animate this hand-drawn ink illustration on
+   parchment background while fully preserving the
+   illustration style, ink line quality, watercolor wash
+   colors, and aged texture." Closes with "Audio: no
+   narration, no dialogue, no spoken voice, no lip sync, no
+   music. SFX only: [2-4 diegetic scene-appropriate sounds]."
+
+   GROK mode (when active): videoPrompt EXACTLY 30-40 words.
+   Structure: "[Camera motion 5-8 words]. [Atmosphere motion
+   5-8 words]. [Character micro-motion 5-8 words]. SFX only:
+   [3-5 diegetic sounds]. No music, no narration, no
+   dialogue. Preserve hand-drawn ink illustration on
+   parchment, no style change." Do NOT re-describe the
+   scene — Grok already has the image.
+
+   BANNED motion (both modes): face morphing, character
    redesign mid-animation, style change from illustration to
    photo, adding new characters, changing location, fast
-   chaotic movement, color palette changing, parchment
-   texture disappearing, lip sync, mouth-speaking animation,
-   full face animation.
+   chaotic movement, whip pans, shake, color palette
+   changing, parchment texture disappearing, lip sync,
+   mouth-speaking animation, full face animation.
 
-   REQUIRED motion: at least ONE atmosphere-motion
-   (smoke drift, dust particles, fire flicker, embers,
-   heat shimmer, fog, rain, cloud shadows). Camera and
-   subtle character motion allowed (slow breathing, slight
-   head turn, cloth fluttering, hand clenching, eye movement
-   only).
+   REQUIRED motion (both modes): at least ONE atmosphere
+   motion (smoke drift, dust particles, fire flicker,
+   embers, heat shimmer, fog, rain, cloud shadows). Camera
+   moves limited to slow push-in / pull-out / pan / tilt /
+   slight handheld drift / hold steady. Character motion
+   subtle only (slow breathing, slight head turn, cloth
+   fluttering, hand tremor, eye movement only).
 
 7. PUBLIC FIGURES → SILHOUETTE / ABSTRACT, NEVER RECOGNIZABLE.
    Real politicians, leaders, or named individuals must be
@@ -1180,10 +1238,12 @@ lighting rules.
    □ Ends with the explicit "Style anchors:..." phrase
      including "16:9 composition, no text"?
    □ "videoPrompt" field present and NOT empty?
-   □ videoPrompt starts with "Animate this hand-drawn ink
-     illustration on parchment background..."?
-   □ videoPrompt ends with the full audio lock (SFX list +
-     music decision)?
+   □ videoPrompt matches the ACTIVE engine format (VEO 80-130
+     words with opening line, OR GROK 30-40 words tight
+     structure with closing "Preserve hand-drawn ink…" phrase)?
+   □ videoPrompt explicitly states "no music" AND "no
+     narration" AND "no dialogue" — NEVER mentions background
+     music, mood music, orchestral, piano, drums, or scoring?
    □ videoPrompt includes ≥ 1 atmosphere motion?
    □ No lip-sync, no face morph, no style-change motion?
    □ No named external palettes (Divine, Olympus, etc.)?
@@ -1195,8 +1255,17 @@ Hand Drawn. They override any earlier guidance they contradict.
 `,
 };
 
-function getHistorySystemPrompt(style: string): string {
-  const base = HISTORY_SYSTEM_PROMPTS[style] || '';
+function getHistorySystemPrompt(style: string, settings?: GenerationSettings): string {
+  let base = HISTORY_SYSTEM_PROMPTS[style] || '';
+
+  // Hand Drawn — substitute the engine-specific video block based on
+  // settings.handDrawnEngine. Defaults to 'grok' when undefined.
+  if (style === 'Hand Drawn') {
+    const engine = (settings?.handDrawnEngine === 'veo') ? 'veo' : 'grok';
+    const engineBlock = engine === 'veo' ? HAND_DRAWN_VEO_VIDEO_BLOCK : HAND_DRAWN_GROK_VIDEO_BLOCK;
+    base = base.replace('[VIDEO_ENGINE_BLOCK]', engineBlock);
+  }
+
   // Inject shared Nano Banana optimization rules into all history styles
   const withShared = base + '\n' + NANO_BANANA_RULES;
   // Append any style-specific FINAL override AFTER the shared rules
@@ -1501,6 +1570,11 @@ export interface GenerationSettings {
   enhancementToggle: boolean; consistencyLock: boolean;
   sceneIntensity: string; cameraAngleVariation: boolean; thinkingMode: boolean;
   sacredProtocol: boolean; veoEnabled: boolean;
+  // Hand Drawn style supports two video-prompt engines:
+  //   'veo'  → detailed 80-130 word video prompts (Veo 3 / cinematic)
+  //   'grok' → tight 30-40 word video prompts (Grok Imagine optimized)
+  // Defaults to 'grok' when undefined. Only used when style === 'Hand Drawn'.
+  handDrawnEngine?: 'veo' | 'grok';
 }
 
 export interface GeneratedPrompt {
@@ -1862,7 +1936,7 @@ async function generateChunkWithClient(
   if (isHistory) {
     // HISTORY STYLE MODE: Use style-specific system prompt
     const historyConfig = getHistoryStyleConfig(settings.style)!;
-    const basePrompt = getHistorySystemPrompt(settings.style);
+    const basePrompt = getHistorySystemPrompt(settings.style, settings);
 
     // Inject global context
     const contextBlock = `
@@ -2002,15 +2076,36 @@ STRICT RULES:
 
   // Hand Drawn style ALWAYS emits a videoPrompt per subtitle in addition
   // to the image prompt (it's part of the style contract, not optional
-  // like Mythology's veoEnabled).
+  // like Mythology's veoEnabled). Hand Drawn supports two video engines —
+  // VEO (cinematic, 80-130 words) or GROK (Grok Imagine, 30-40 words).
   const isHandDrawn = settings.style === 'Hand Drawn';
+  const handDrawnEngine: 'veo' | 'grok' = (settings.handDrawnEngine === 'veo') ? 'veo' : 'grok';
   const needsVideoPrompt = (isMythology && settings.veoEnabled) || isHandDrawn;
 
-  const exampleFormat = needsVideoPrompt
-    ? `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Animate this hand-drawn ink illustration..."}, ...]`
-    : `[{"id": "1", "prompt": "A detailed scene of..."}, {"id": "2", "prompt": "..."}]`;
+  // Per-engine example format so the model sees the correct shape.
+  let exampleFormat: string;
+  if (isHandDrawn && handDrawnEngine === 'grok') {
+    exampleFormat = `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Slow push-in toward [subject]. Dust drifts in light shaft. Subtle chest breathing of figure. SFX only: low wind, faint grit, soft breath. No music, no narration, no dialogue. Preserve hand-drawn ink illustration on parchment, no style change."}, ...]`;
+  } else if (isHandDrawn && handDrawnEngine === 'veo') {
+    exampleFormat = `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Animate this hand-drawn ink illustration on parchment background while fully preserving the illustration style, ink line quality, watercolor wash colors, and aged texture. Slow push-in toward... [80-130 words total] ...Audio: no narration, no dialogue, no spoken voice, no lip sync, no music. SFX only: ambient wind, distant birds, fabric rustle."}, ...]`;
+  } else if (needsVideoPrompt) {
+    exampleFormat = `[{"id": "1", "prompt": "A detailed scene of...", "videoPrompt": "Slow push-in on..."}, ...]`;
+  } else {
+    exampleFormat = `[{"id": "1", "prompt": "A detailed scene of..."}, {"id": "2", "prompt": "..."}]`;
+  }
 
   const wordRange = isMythology ? `${PROMPT_CONFIG.MIN_WORDS}-280` : `${PROMPT_CONFIG.MIN_WORDS}-${PROMPT_CONFIG.MAX_WORDS}`;
+
+  // Engine-specific reminder appended to the chunk instruction so the model
+  // can't drift across engines mid-batch.
+  let videoPromptInstruction = '';
+  if (isHandDrawn && handDrawnEngine === 'grok') {
+    videoPromptInstruction = ' Also generate a videoPrompt for each. ACTIVE VIDEO ENGINE: GROK — use ONLY the GROK MODE format (exactly 30-40 words, tight 4-segment structure, ending with "Preserve hand-drawn ink illustration on parchment, no style change."). Do NOT use VEO format. NO background music in any prompt — every videoPrompt must contain "no music" along with "no narration / no dialogue / SFX only".';
+  } else if (isHandDrawn && handDrawnEngine === 'veo') {
+    videoPromptInstruction = ' Also generate a videoPrompt for each. ACTIVE VIDEO ENGINE: VEO — use ONLY the VEO MODE format (80-130 words, opening with "Animate this hand-drawn ink illustration on parchment background..." and closing with the no-music audio lock). Do NOT use GROK tight format. NO background music in any prompt — every videoPrompt must explicitly contain "no music".';
+  } else if (needsVideoPrompt) {
+    videoPromptInstruction = ' Also generate a videoPrompt for each (see style rules for motion + audio lock requirements).';
+  }
 
   // AGGRESSIVE MODE: When only 1 subtitle, emphasize that model MUST return it
   const singleSubtitleMode = chunk.length === 1;
@@ -2018,7 +2113,7 @@ STRICT RULES:
     ? `CRITICAL: You MUST generate a prompt for the subtitle with ID "${chunk[0].id}". Do NOT skip it. Do NOT return an empty array. Return exactly 1 prompt with id "${chunk[0].id}".\n\n`
     : '';
 
-  const contents = `${aggressiveHeader}Generate exactly ${chunk.length} image prompt${chunk.length > 1 ? 's' : ''} (one per subtitle). Each prompt MUST be ${wordRange} words.${needsVideoPrompt ? ' Also generate a videoPrompt for each (see style rules for motion + audio lock requirements).' : ''}
+  const contents = `${aggressiveHeader}Generate exactly ${chunk.length} image prompt${chunk.length > 1 ? 's' : ''} (one per subtitle). Each prompt MUST be ${wordRange} words.${videoPromptInstruction}
 Return ONLY a valid JSON array. No markdown, no explanation.
 
 Example format:
